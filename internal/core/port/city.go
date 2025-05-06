@@ -1,16 +1,18 @@
 package port
 
 import (
-	"category/internal/core/domain"
 	"context"
+	"net/url"
+
+	"category/internal/core/domain"
 )
 
 type CityService interface {
-	GetCityList(ctx context.Context, params domain.ProductListParamsSt, ids []string) (domain.ProductCityListRep, error)
-	GetCityByID(ctx context.Context, id string) (domain.ProductCityMain, error)
+	GetCityList(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
+	GetCityByID(ctx context.Context, id int64) (*domain.ProductCityMain, error)
 }
 
 type CityRepository interface {
-	GetCityList(ctx context.Context, params domain.ProductListParamsSt, ids []string) ([]domain.ProductCityMain, error)
-	GetCityByID(ctx context.Context, id string) (domain.ProductCityMain, error)
+	GetCityList(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
+	GetCityByID(ctx context.Context, id int64) (*domain.ProductCityMain, error)
 }
