@@ -6,11 +6,11 @@ import (
 )
 
 type CategoryService interface {
-	GetCategory(ctx context.Context, params domain.ProductListParamsSt, ids []string) (domain.ProductCategoryListRep, error)
-	GetCategoryByID(ctx context.Context, id string) (domain.ProductCategoryMain, error)
+	ListCategories(ctx context.Context, params domain.ProductListParamsSt, ids []string) (domain.ProductCategoryListRep, error)
+	GetCategory(ctx context.Context, id uint64) (domain.ProductCategoryMain, error)
 }
 
 type CategoryRepository interface {
 	GetCategory(ctx context.Context, params domain.ProductListParamsSt, ids []string) ([]domain.ProductCategoryMain, error)
-	GetCategoryByID(ctx context.Context, id string) (domain.ProductCategoryMain, error)
+	GetCategoryByID(ctx context.Context, id uint64) (domain.ProductCategoryMain, error)
 }
