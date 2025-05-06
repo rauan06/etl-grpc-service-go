@@ -16,9 +16,9 @@ func NewCategoryRepository(baseURL *url.URL) *CategoryRepository {
 	}
 }
 
-func (r *CategoryRepository) GetCategory(ctx context.Context, params domain.ProductListParamsSt, ids []string) ([]domain.ProductCategoryMain, error) {
+func (r *CategoryRepository) GetCategory(ctx context.Context, params domain.ProductListParamsSt, ids []int64) ([]domain.ProductCategoryMain, error) {
 	panic("Imlement me")
 }
-func (r *CategoryRepository) GetCategoryByID(ctx context.Context, id uint64) (domain.ProductCategoryMain, error) {
+func (r *CategoryRepository) GetCategoryByID(ctx context.Context, id int64) (domain.ProductCategoryMain, error) {
 	panic("Imlement me")
 }

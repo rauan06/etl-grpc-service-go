@@ -16,9 +16,9 @@ func NewCategoryService(repo port.CategoryRepository) *CategoryService {
 	}
 }
 
-func (s *CategoryService) ListCategories(ctx context.Context, params domain.ProductListParamsSt, ids []uint64) (domain.ProductCategoryListRep, error) {
+func (s *CategoryService) ListCategories(ctx context.Context, params domain.ProductListParamsSt, ids []int64) (domain.ProductCategoryListRep, error) {
 	panic("Implement me")
 }
-func (s *CategoryService) GetCategory(ctx context.Context, id uint64) (domain.ProductCategoryMain, error) {
+func (s *CategoryService) GetCategory(ctx context.Context, id int64) (domain.ProductCategoryMain, error) {
 	panic("Implement me")
 }
