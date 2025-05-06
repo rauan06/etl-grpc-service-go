@@ -22,10 +22,10 @@ type APIServer struct {
 	logger  *slog.Logger
 }
 
-func NewAPIServer(address string, baseURL *url.URL, logger *slog.Logger) *APIServer {
+func NewAPIServer(address string, url *url.URL, logger *slog.Logger) *APIServer {
 	return &APIServer{
 		address: address,
-		baseURL: baseURL,
+		baseURL: url,
 		mux:     Routes(),
 		logger:  logger,
 	}
