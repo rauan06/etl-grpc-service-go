@@ -3,18 +3,22 @@ package handler
 import (
 	"category/internal/core/domain"
 	"category/internal/core/port"
+	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
 
 type CategoryHandler struct {
-	svc port.CategoryService
+	svc    port.CategoryService
+	logger *slog.Logger
 }
 
-func NewCategoryHandler(svc port.CategoryService) *CategoryHandler {
+func NewCategoryHandler(svc port.CategoryService, logger *slog.Logger) *CategoryHandler {
 	return &CategoryHandler{
 		svc,
+		logger,
 	}
 }
 
@@ -60,7 +64,7 @@ func (h *CategoryHandler) ListCategories(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Call service/repository layer
-	categories, err := h.categoryService.GetCategory(r.Context(), params, ids)
+	categories, err := h.svc.ListCategories(r.Context(), params, ids)
 	if err != nil {
 		http.Error(w, "Failed to get categories", http.StatusInternalServerError)
 		return
@@ -74,5 +78,25 @@ func (h *CategoryHandler) ListCategories(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
+	rawId := r.PathValue("id")
+	id, err := strconv.ParseInt(rawId, 10, 64)
+	if err != nil {
+		h.logger.Error("Error converting to int", "error", err)
+		http.Error(w, "Error converting to int", http.StatusInternalServerError)
+		return
+	}
 
+	category, err := h.svc.GetCategory(context.Background(), int64(id))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(category); err != nil {
+		h.logger.Error("Error encoding response to json", "error", err)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
