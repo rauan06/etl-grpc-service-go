@@ -8,11 +8,11 @@ import (
 )
 
 type CityService interface {
-	GetCityList(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
-	GetCityByID(ctx context.Context, id int64) (*domain.ProductCityMain, error)
+	ListCities(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
+	GetCity(ctx context.Context, id int64) (*domain.ProductCityMain, error)
 }
 
 type CityRepository interface {
-	GetCityList(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
-	GetCityByID(ctx context.Context, id int64) (*domain.ProductCityMain, error)
+	ListCities(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error)
+	GetCity(ctx context.Context, id int64) (*domain.ProductCityMain, error)
 }
