@@ -4,6 +4,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 )
 
 func Routes() *http.ServeMux {
@@ -17,14 +18,14 @@ func Routes() *http.ServeMux {
 type APIServer struct {
 	address string
 	mux     *http.ServeMux
-	url     string
+	baseURL *url.URL
 	logger  *slog.Logger
 }
 
-func NewAPIServer(address string, url string, logger *slog.Logger) *APIServer {
+func NewAPIServer(address string, url *url.URL, logger *slog.Logger) *APIServer {
 	return &APIServer{
 		address: address,
-		url:     url,
+		baseURL: url,
 		mux:     Routes(),
 		logger:  logger,
 	}
