@@ -18,14 +18,14 @@ func Routes() *http.ServeMux {
 type APIServer struct {
 	address string
 	mux     *http.ServeMux
-	baseURL *url.URL
+	URL     *url.URL
 	logger  *slog.Logger
 }
 
 func NewAPIServer(address string, url *url.URL, logger *slog.Logger) *APIServer {
 	return &APIServer{
 		address: address,
-		baseURL: url,
+		URL:     url,
 		mux:     Routes(),
 		logger:  logger,
 	}
