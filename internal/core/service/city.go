@@ -18,8 +18,12 @@ func NewCityService(repo port.CityRepository) *CityService {
 }
 
 func (s *CityService) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
-	params["sort"] = filterValidSortParams(params["sort"])
-	params["ids"] = filterValidIDs(params["ids"])
+	params["list_params.sort"] = filterValidSortParams(params["sort"])
+	params["list_params.ids"] = filterValidIDs(params["ids"])
+	params["list_params.page"] = params["page"]
+	params["list_params.page_size"] = params["page_size"]
+
+	clearParams(params)
 
 	return s.repo.ListCities(ctx, params)
 }
