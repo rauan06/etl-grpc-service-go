@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"category/internal/core/port"
 	"log/slog"
 	"net/http"
 	"strconv"
-	"category/internal/core/port"
 )
 
 type CategoryHandler struct {

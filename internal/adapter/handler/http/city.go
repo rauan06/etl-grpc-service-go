@@ -21,8 +21,8 @@ func NewCityHandler(svc port.CityService, logger *slog.Logger) *CityHandler {
 }
 
 func (h *CityHandler) RegisterEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("GET /City", h.ListCities)
-	mux.HandleFunc("GET /City/{id}", h.GetCity)
+	mux.HandleFunc("GET /city", h.ListCities)
+	mux.HandleFunc("GET /city/{id}", h.GetCity)
 }
 
 func (h *CityHandler) ListCities(w http.ResponseWriter, r *http.Request) {

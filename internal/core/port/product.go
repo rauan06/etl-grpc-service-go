@@ -1,16 +1,18 @@
 package port
 
 import (
-	"category/internal/core/domain"
 	"context"
+	"net/url"
+
+	"category/internal/core/domain"
 )
 
 type ProductService interface {
-	GetProductList(ctx context.Context, params domain.ProductListParamsSt, ids, categoryIDs []string, withCategory bool) (domain.ProductProductListRep, error)
-	GetProductByID(ctx context.Context, id string, withCategory bool) (domain.ProductProductMain, error)
+	ListProducts(ctx context.Context, params url.Values) (*domain.ProductProductListRep, error)
+	GetProduct(ctx context.Context, id int64) (*domain.ProductProductMain, error)
 }
 
 type ProductRepository interface {
-	GetProductList(ctx context.Context, params domain.ProductListParamsSt, ids, categoryIDs []string, withCategory bool) ([]domain.ProductProductMain, error)
-	GetProductByID(ctx context.Context, id string, withCategory bool) (domain.ProductProductMain, error)
+	ListProducts(ctx context.Context, params url.Values) (*domain.ProductProductListRep, error)
+	GetProduct(ctx context.Context, id int64) (*domain.ProductProductMain, error)
 }

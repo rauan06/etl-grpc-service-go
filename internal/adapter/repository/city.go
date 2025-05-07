@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	pathCity = "City"
+	pathCity = "city"
 )
 
 type CityRepository struct {
