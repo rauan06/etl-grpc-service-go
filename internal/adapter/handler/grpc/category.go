@@ -15,7 +15,7 @@ type CategoryGrpcHandler struct {
 	logger *slog.Logger
 }
 
-func NewCategoryGrpcHandler(svc port.CategoryService, logger *slog.Logger) *CategoryGrpcHandler {
+func NewGrpcCategoryHandler(svc port.CategoryService, logger *slog.Logger) *CategoryGrpcHandler {
 	return &CategoryGrpcHandler{
 		svc:    svc,
 		logger: logger,

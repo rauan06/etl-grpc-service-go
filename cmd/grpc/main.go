@@ -37,21 +37,29 @@ func main() {
 	// Repository Layer
 	// #######################
 	categoryRepository := repository.NewCategoryRepository(URL)
+	cityRepository := repository.NewCityRepository(URL)
+	productRepository := repository.NewProductRepository(URL)
 
 	// #######################
 	// Service Layer
 	// #######################
 	categoryService := service.NewCategoryService(categoryRepository)
+	cityService := service.NewCityService(cityRepository)
+	productService := service.NewProductService(productRepository)
 
 	// #######################
 	// Presentation Layer
 	// #######################
-	categoryHandler := handler.NewCategoryGrpcHandler(categoryService, logger)
+	categoryHandler := handler.NewGrpcCategoryHandler(categoryService, logger)
+	cityHandler := handler.NewGrpcCityHandler(cityService, logger)
+	productHandler := handler.NewGrpcProductHandler(productService, logger)
 
 	// #######################
 	// Registering Endpoints
 	// #######################
 	pb.RegisterCategoryServer(grpcServer, categoryHandler)
+	pb.RegisterCityServer(grpcServer, cityHandler)
+	pb.RegisterProductServer(grpcServer, productHandler)
 
 	list, err := net.Listen("tcp", "localhost:9090")
 	if err != nil {

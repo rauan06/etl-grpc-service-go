@@ -17,7 +17,7 @@ func NewCityService(repo port.CityRepository) *CityService {
 	return &CityService{repo: repo}
 }
 
-func (s *CityService) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
+func (s *CityService) ListCities(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
 	params["list_params.sort"] = filterValidSortParams(params["list_params.sort"])
 	params["list_params.ids"] = filterValidIDs(params["list_params.ids"])
 

@@ -16,7 +16,7 @@ type productRepository struct {
 	URL *url.URL
 }
 
-func NewproductRepository(URL *url.URL) *productRepository {
+func NewProductRepository(URL *url.URL) *productRepository {
 	return &productRepository{
 		URL.JoinPath(pathProduct),
 	}
@@ -36,7 +36,7 @@ func (r *productRepository) ListProducts(ctx context.Context, params url.Values)
 	return products, nil
 }
 
-func (r *productRepository) Getproduct(ctx context.Context, id int64) (*domain.ProductProductMain, error) {
+func (r *productRepository) GetProduct(ctx context.Context, id int64) (*domain.ProductProductMain, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err

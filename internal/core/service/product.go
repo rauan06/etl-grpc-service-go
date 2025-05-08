@@ -25,7 +25,7 @@ func (s *ProductService) ListProducts(ctx context.Context, params url.Values) (*
 	return s.repo.ListProducts(ctx, params)
 }
 
-func (s *ProductService) GetProducts(ctx context.Context, id int64) (*domain.ProductProductMain, error) {
+func (s *ProductService) GetProduct(ctx context.Context, id int64) (*domain.ProductProductMain, error) {
 	if id < 0 {
 		return nil, errors.New("id cannot be negative")
 	}

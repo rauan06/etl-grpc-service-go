@@ -23,7 +23,7 @@ func NewCityRepository(URL *url.URL) *CityRepository {
 	}
 }
 
-func (r *CityRepository) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
+func (r *CityRepository) ListCities(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err

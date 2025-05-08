@@ -15,7 +15,7 @@ type ProductHandler struct {
 	logger *slog.Logger
 }
 
-func NewProductHandler(svc port.ProductService, logger *slog.Logger) *ProductHandler {
+func NewGrpcProductHandler(svc port.ProductService, logger *slog.Logger) *ProductHandler {
 	return &ProductHandler{
 		svc:    svc,
 		logger: logger,

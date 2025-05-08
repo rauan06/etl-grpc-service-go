@@ -15,7 +15,7 @@ type CityHandler struct {
 	logger *slog.Logger
 }
 
-func NewCityHandler(svc port.CityService, logger *slog.Logger) *CityHandler {
+func NewGrpcCityHandler(svc port.CityService, logger *slog.Logger) *CityHandler {
 	return &CityHandler{
 		svc:    svc,
 		logger: logger,
