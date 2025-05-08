@@ -18,13 +18,9 @@ func NewProductService(repo port.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) ListProducts(ctx context.Context, params url.Values) (*domain.ProductProductListRep, error) {
-	params["list_params.sort"] = filterValidSortParams(params["sort"])
-	params["list_params.ids"] = filterValidIDs(params["ids"])
+	params["list_params.sort"] = filterValidSortParams(params["list_params.sort"])
+	params["list_params.ids"] = filterValidIDs(params["list_params.ids"])
 	params["category_ids"] = filterValidIDs(params["category_ids"])
-	params["list_params.page"] = params["page"]
-	params["list_params.page_size"] = params["page_size"]
-
-	clearParams(params)
 
 	return s.repo.ListProducts(ctx, params)
 }

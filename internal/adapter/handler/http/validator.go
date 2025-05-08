@@ -7,7 +7,7 @@ import (
 )
 
 func validatePaginationParams(params url.Values) error {
-	pageStr := params.Get("page")
+	pageStr := params.Get("list_params.page")
 	var page int64
 	if pageStr != "" {
 		p, err := strconv.ParseInt(pageStr, 10, 64)
@@ -17,7 +17,7 @@ func validatePaginationParams(params url.Values) error {
 		page = p
 	}
 
-	pageSizeStr := params.Get("page_size")
+	pageSizeStr := params.Get("list_params.page_size")
 	var pageSize int64
 	if pageSizeStr != "" {
 		ps, err := strconv.ParseInt(pageSizeStr, 10, 64)

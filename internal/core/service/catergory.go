@@ -20,12 +20,8 @@ func NewCategoryService(repo port.CategoryRepository) *CategoryService {
 }
 
 func (s *CategoryService) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCategoryListRep, error) {
-	params["list_params.sort"] = filterValidSortParams(params["sort"])
-	params["list_params.ids"] = filterValidIDs(params["ids"])
-	params["list_params.page"] = params["page"]
-	params["list_params.page_size"] = params["page_size"]
-
-	clearParams(params)
+	params["list_params.sort"] = filterValidSortParams(params["list_params.sort"])
+	params["list_params.ids"] = filterValidIDs(params["list_params.ids"])
 
 	return s.repo.ListCategories(ctx, params)
 }
@@ -60,13 +56,6 @@ func filterValidIDs(idParams []string) []string {
 	}
 
 	return valid
-}
-
-func clearParams(params url.Values) {
-	delete(params, "sort")
-	delete(params, "ids")
-	delete(params, "page")
-	delete(params, "page_size")
 }
 
 func isValidCategoryField(field string) bool {

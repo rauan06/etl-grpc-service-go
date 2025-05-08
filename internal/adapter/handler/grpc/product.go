@@ -26,10 +26,10 @@ func (h *ProductHandler) List(ctx context.Context, req *pb.ProductListReq) (*pb.
 	h.logger.InfoContext(ctx, "received ListProducts() gRPC request", "req", req)
 
 	params := url.Values{}
-	params.Set("page", strconv.FormatInt(req.GetListParams().GetPage(), 10))
-	params.Set("page_size", strconv.FormatInt(req.GetListParams().GetPageSize(), 10))
+	params.Set("list_params.page", strconv.FormatInt(req.GetListParams().GetPage(), 10))
+	params.Set("list_params.page_size", strconv.FormatInt(req.GetListParams().GetPageSize(), 10))
 	for _, s := range req.GetListParams().GetSort() {
-		params.Add("sort", s)
+		params.Add("list_params.sort", s)
 	}
 
 	if req.GetWithCategory() {
