@@ -26,7 +26,7 @@ func NewCityClient(URL *url.URL) *CityClient {
 
 func (r *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
 	// Format params to url.Values format
-	urlParams := url.Values{}
+	urlParams := r.URL.Query()
 	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
 	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
 
@@ -38,10 +38,10 @@ func (r *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt,
 		urlParams.Add("ids", id)
 	}
 
-	queryString := urlParams.Encode()
+	r.URL.RawQuery = urlParams.Encode()
 
 	// Make a request
-	resp, err := http.Get(r.URL.JoinPath(queryString).String())
+	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
