@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -22,8 +23,34 @@ func NewproductClient(URL *url.URL) *productClient {
 	}
 }
 
-func (r *productClient) ListProducts(ctx context.Context, params url.Values) (*domain.ProductListRep, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *productClient) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
+	// Format params to url.Values format
+	urlParams := url.Values{}
+	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
+	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	if withCategory {
+		urlParams.Set("with_category", "true")
+	} else {
+		urlParams.Set("with_category", "false")
+	}
+
+	for _, sortVal := range params.Sort {
+		urlParams.Add("list_params.sort", sortVal)
+	}
+
+	for _, id := range ids {
+		urlParams.Add("ids", id)
+	}
+
+	for _, categoryVal := range categoryIDs {
+		urlParams.Add("category_ids", categoryVal)
+	}
+	queryString := urlParams.Encode()
+
+	fullURL := r.URL.String() + "?" + queryString
+
+	resp, err := http.Get(fullURL)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +63,8 @@ func (r *productClient) ListProducts(ctx context.Context, params url.Values) (*d
 	return products, nil
 }
 
-func (r *productClient) Getproduct(ctx context.Context, id int64) (*domain.ProductMain, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *productClient) GetProduct(ctx context.Context, id string) (*domain.ProductMain, error) {
+	resp, err := http.Get(r.URL.JoinPath(id).String())
 	if err != nil {
 		return nil, err
 	}
