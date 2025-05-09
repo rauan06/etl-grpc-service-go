@@ -25,7 +25,7 @@ func NewproductClient(URL *url.URL) *productClient {
 
 func (r *productClient) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
 	// Format params to url.Values format
-	urlParams := url.Values{}
+	urlParams := r.URL.Query()
 	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
 	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
 
@@ -46,11 +46,10 @@ func (r *productClient) ListProducts(ctx context.Context, params domain.ListPara
 	for _, categoryVal := range categoryIDs {
 		urlParams.Add("category_ids", categoryVal)
 	}
-	queryString := urlParams.Encode()
 
-	fullURL := r.URL.String() + "?" + queryString
+	r.URL.RawQuery = urlParams.Encode()
 
-	resp, err := http.Get(fullURL)
+	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
