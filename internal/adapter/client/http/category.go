@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"category/internal/core/domain"
 )
@@ -23,8 +24,24 @@ func NewCategoryClient(URL *url.URL) *CategoryClient {
 	}
 }
 
-func (r *CategoryClient) ListCategories(ctx context.Context, params url.Values) (*domain.CategoryListRep, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
+	// Format params to url.Values format
+	urlParams := url.Values{}
+	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
+	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	for _, sortVal := range params.Sort {
+		urlParams.Add("list_params.sort", sortVal)
+	}
+
+	for _, id := range ids {
+		urlParams.Add("ids", id)
+	}
+
+	queryString := urlParams.Encode()
+
+	// Make a request
+	resp, err := http.Get(r.URL.JoinPath(queryString).String())
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +54,8 @@ func (r *CategoryClient) ListCategories(ctx context.Context, params url.Values) 
 	return categories, nil
 }
 
-func (r *CategoryClient) GetCategory(ctx context.Context, id int64) (*domain.CategoryMain, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *CategoryClient) GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error) {
+	resp, err := http.Get(r.URL.JoinPath(id).String())
 	if err != nil {
 		return nil, err
 	}
