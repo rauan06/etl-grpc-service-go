@@ -1,4 +1,4 @@
-package client
+package http
 
 import (
 	"category/internal/core/domain"
@@ -17,7 +17,7 @@ type productClient struct {
 	URL *url.URL
 }
 
-func NewproductClient(URL *url.URL) *productClient {
+func NewProductClient(URL *url.URL) *productClient {
 	return &productClient{
 		URL.JoinPath(pathProduct),
 	}

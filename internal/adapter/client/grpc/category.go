@@ -1,4 +1,4 @@
-package client
+package grpc
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type GrpcCategoryClient struct {
 	service pb.CategoryClient
 }
 
-func NewGrpcCategoryClient(ctx context.Context, url string) (*GrpcCategoryClient, error) {
+func NewCategoryClient(ctx context.Context, url string) (*GrpcCategoryClient, error) {
 	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
