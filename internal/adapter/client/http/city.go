@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"category/internal/core/domain"
 )
@@ -23,22 +24,38 @@ func NewCityClient(URL *url.URL) *CityClient {
 	}
 }
 
-func (r *CityClient) ListCategories(ctx context.Context, params url.Values) (*domain.CityListRep, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
+	// Format params to url.Values format
+	urlParams := url.Values{}
+	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
+	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	for _, sortVal := range params.Sort {
+		urlParams.Add("list_params.sort", sortVal)
+	}
+
+	for _, id := range ids {
+		urlParams.Add("ids", id)
+	}
+
+	queryString := urlParams.Encode()
+
+	// Make a request
+	resp, err := http.Get(r.URL.JoinPath(queryString).String())
 	if err != nil {
 		return nil, err
 	}
 
-	var categories *domain.CityListRep
-	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
+	var cities *domain.CityListRep
+	if err := json.NewDecoder(resp.Body).Decode(cities); err != nil {
 		return nil, err
 	}
 
-	return categories, nil
+	return cities, nil
 }
 
-func (r *CityClient) GetCity(ctx context.Context, id int64) (*domain.CityMain, error) {
-	resp, err := http.Get(r.URL.String())
+func (r *CityClient) GetCity(ctx context.Context, id string) (*domain.CityMain, error) {
+	resp, err := http.Get(r.URL.JoinPath(id).String())
 	if err != nil {
 		return nil, err
 	}

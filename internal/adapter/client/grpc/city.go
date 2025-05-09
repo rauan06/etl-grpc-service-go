@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"category/internal/core/domain"
 	pb "category/protos/product/v1"
 
 	"google.golang.org/grpc"
@@ -29,18 +30,50 @@ func (c *CityGrpcClient) Close() {
 	c.conn.Close()
 }
 
-func (c *CityGrpcClient) ListCities(ctx context.Context, listParams *pb.CityListReq) (*pb.CityListRep, error) {
-	resp, err := c.service.List(ctx, listParams)
+func (c *CityGrpcClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
+	resp, err := c.service.List(ctx, &pb.CityListReq{
+		ListParams: &pb.ListParamsSt{
+			Page:     params.Page,
+			PageSize: params.PageSize,
+			Sort:     params.Sort,
+		},
+		Ids: ids,
+	})
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+
+	var results []domain.CityMain
+	for _, cat := range resp.Results {
+		results = append(results, domain.CityMain{
+			UpdatedAt: cat.UpdatedAt.String(),
+			CreatedAt: cat.CreatedAt.String(),
+			Deleted:   cat.Deleted,
+			ID:        cat.Id,
+			Name:      cat.Name,
+		})
+	}
+
+	return &domain.CityListRep{
+		PaginationInfo: domain.PaginationInfoSt{
+			Page:     resp.PaginationInfo.Page,
+			PageSize: resp.PaginationInfo.PageSize,
+		},
+		Results: results,
+	}, nil
 }
 
-func (c *CityGrpcClient) GetCity(ctx context.Context, id string) (*pb.CityMain, error) {
+func (c *CityGrpcClient) GetCity(ctx context.Context, id string) (*domain.CityMain, error) {
 	resp, err := c.service.Get(ctx, &pb.CityGetReq{Id: id})
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+
+	return &domain.CityMain{
+		UpdatedAt: resp.UpdatedAt.String(),
+		CreatedAt: resp.CreatedAt.String(),
+		Deleted:   resp.Deleted,
+		ID:        resp.Id,
+		Name:      resp.Name,
+	}, nil
 }
