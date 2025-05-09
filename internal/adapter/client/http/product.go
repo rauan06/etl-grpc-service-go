@@ -12,23 +12,23 @@ const (
 	pathProduct = "product"
 )
 
-type productRepository struct {
+type productClient struct {
 	URL *url.URL
 }
 
-func NewproductRepository(URL *url.URL) *productRepository {
-	return &productRepository{
+func NewproductClient(URL *url.URL) *productClient {
+	return &productClient{
 		URL.JoinPath(pathProduct),
 	}
 }
 
-func (r *productRepository) ListProducts(ctx context.Context, params url.Values) (*domain.ProductProductListRep, error) {
+func (r *productClient) ListProducts(ctx context.Context, params url.Values) (*domain.ProductListRep, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var products *domain.ProductProductListRep
+	var products *domain.ProductListRep
 	if err := json.NewDecoder(resp.Body).Decode(products); err != nil {
 		return nil, err
 	}
@@ -36,13 +36,13 @@ func (r *productRepository) ListProducts(ctx context.Context, params url.Values)
 	return products, nil
 }
 
-func (r *productRepository) Getproduct(ctx context.Context, id int64) (*domain.ProductProductMain, error) {
+func (r *productClient) Getproduct(ctx context.Context, id int64) (*domain.ProductMain, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var products *domain.ProductProductMain
+	var products *domain.ProductMain
 	if err := json.NewDecoder(resp.Body).Decode(products); err != nil {
 		return nil, err
 	}

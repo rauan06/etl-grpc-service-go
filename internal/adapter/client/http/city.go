@@ -13,23 +13,23 @@ const (
 	pathCity = "city"
 )
 
-type CityRepository struct {
+type CityClient struct {
 	URL *url.URL
 }
 
-func NewCityRepository(URL *url.URL) *CityRepository {
-	return &CityRepository{
+func NewCityClient(URL *url.URL) *CityClient {
+	return &CityClient{
 		URL.JoinPath(pathCity),
 	}
 }
 
-func (r *CityRepository) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCityListRep, error) {
+func (r *CityClient) ListCategories(ctx context.Context, params url.Values) (*domain.CityListRep, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var categories *domain.ProductCityListRep
+	var categories *domain.CityListRep
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}
@@ -37,13 +37,13 @@ func (r *CityRepository) ListCategories(ctx context.Context, params url.Values) 
 	return categories, nil
 }
 
-func (r *CityRepository) GetCity(ctx context.Context, id int64) (*domain.ProductCityMain, error) {
+func (r *CityClient) GetCity(ctx context.Context, id int64) (*domain.CityMain, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var categories *domain.ProductCityMain
+	var categories *domain.CityMain
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}

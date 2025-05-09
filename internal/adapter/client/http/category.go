@@ -13,23 +13,23 @@ const (
 	pathCategory = "category"
 )
 
-type CategoryRepository struct {
+type CategoryClient struct {
 	URL *url.URL
 }
 
-func NewCategoryRepository(URL *url.URL) *CategoryRepository {
-	return &CategoryRepository{
+func NewCategoryClient(URL *url.URL) *CategoryClient {
+	return &CategoryClient{
 		URL.JoinPath(pathCategory),
 	}
 }
 
-func (r *CategoryRepository) ListCategories(ctx context.Context, params url.Values) (*domain.ProductCategoryListRep, error) {
+func (r *CategoryClient) ListCategories(ctx context.Context, params url.Values) (*domain.CategoryListRep, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var categories *domain.ProductCategoryListRep
+	var categories *domain.CategoryListRep
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}
@@ -37,13 +37,13 @@ func (r *CategoryRepository) ListCategories(ctx context.Context, params url.Valu
 	return categories, nil
 }
 
-func (r *CategoryRepository) GetCategory(ctx context.Context, id int64) (*domain.ProductCategoryMain, error) {
+func (r *CategoryClient) GetCategory(ctx context.Context, id int64) (*domain.CategoryMain, error) {
 	resp, err := http.Get(r.URL.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var categories *domain.ProductCategoryMain
+	var categories *domain.CategoryMain
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}

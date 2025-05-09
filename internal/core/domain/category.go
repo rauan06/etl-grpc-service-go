@@ -1,6 +1,6 @@
 package domain
 
-type ProductCategoryMain struct {
+type CategoryMain struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	Deleted   bool   `json:"deleted"`
@@ -8,7 +8,7 @@ type ProductCategoryMain struct {
 	Name      string `json:"name"`
 }
 
-type ProductCategoryListRep struct {
-	PaginationInfo ProductPaginationInfoSt `json:"pagination_info"`
-	Results        []ProductCategoryMain   `json:"results"`
+type CategoryListRep struct {
+	PaginationInfo PaginationInfoSt `json:"pagination_info"`
+	Results        []CategoryMain   `json:"results"`
 }
