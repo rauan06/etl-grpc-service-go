@@ -68,7 +68,7 @@ func (r *productClient) GetProduct(ctx context.Context, id string) (*domain.Prod
 		return nil, err
 	}
 
-	var products *domain.ProductMain
+	var products = &domain.ProductMain{}
 	if err := json.NewDecoder(resp.Body).Decode(products); err != nil {
 		return nil, err
 	}

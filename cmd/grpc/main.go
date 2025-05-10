@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service.NewCategoryService(categoryClient)
-	service.NewCityService(cityClient)
-	service.NewProductService(productClient)
+	categorySvc := service.NewCategoryService(categoryClient)
+	citySvc := service.NewCityService(cityClient)
+	productSvc := service.NewProductService(productClient)
 }

@@ -46,7 +46,7 @@ func (r *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt,
 		return nil, err
 	}
 
-	var cities *domain.CityListRep
+	var cities = &domain.CityListRep{}
 	if err := json.NewDecoder(resp.Body).Decode(cities); err != nil {
 		return nil, err
 	}

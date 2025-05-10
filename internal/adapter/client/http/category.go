@@ -46,7 +46,7 @@ func (r *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 		return nil, err
 	}
 
-	var categories *domain.CategoryListRep
+	var categories = &domain.CategoryListRep{}
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}
