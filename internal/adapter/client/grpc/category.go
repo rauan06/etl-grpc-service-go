@@ -10,27 +10,27 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type GrpcCategoryClient struct {
+type CategoryClient struct {
 	conn    *grpc.ClientConn
 	service pb.CategoryClient
 }
 
-func NewCategoryClient(ctx context.Context, url string) (*GrpcCategoryClient, error) {
+func NewCategoryClient(ctx context.Context, url string) (*CategoryClient, error) {
 	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
-	return &GrpcCategoryClient{
+	return &CategoryClient{
 		conn:    conn,
 		service: pb.NewCategoryClient(conn),
 	}, nil
 }
 
-func (c *GrpcCategoryClient) Close() {
+func (c *CategoryClient) Close() {
 	c.conn.Close()
 }
 
-func (c *GrpcCategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
+func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
 	resp, err := c.service.List(ctx, &pb.CategoryListReq{
 		ListParams: &pb.ListParamsSt{
 			Page:     params.Page,
@@ -63,7 +63,7 @@ func (c *GrpcCategoryClient) ListCategories(ctx context.Context, params domain.L
 	}, nil
 }
 
-func (c *GrpcCategoryClient) GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error) {
+func (c *CategoryClient) GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error) {
 	resp, err := c.service.Get(ctx, &pb.CategoryGetReq{Id: id})
 	if err != nil {
 		return nil, err

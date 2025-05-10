@@ -1,33 +1,46 @@
 package main
 
 import (
-	"category/internal/adapter/client/grpc"
-	"category/internal/core/service"
 	"context"
+	"fmt"
 	"log"
+
+	"category/internal/adapter/client/grpc"
+	"category/internal/core/domain"
+	"category/internal/core/service"
 )
 
 const (
 	apiURL = "api.com"
 )
 
-// This file is intended to launch project's services using grpc protocol client
 func main() {
-	categoryClient, err := grpc.NewCategoryClient(context.Background(), apiURL)
+	ctx := context.Background()
+
+	// Initialize gRPC client
+	client, err := grpc.NewCategoryClient(ctx, apiURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error initializing gRPC client: %v", err)
+	}
+	defer client.Close()
+
+	// Initialize service with the client
+	categoryService := service.NewCategoryService(client)
+
+	// Extract data
+	params := domain.ListParamsSt{
+		Page:     1,
+		PageSize: 10,
+		Sort:     []string{"name"},
+	}
+	ids := []int64{123, 456}
+
+	categories, err := categoryService.ListCategories(ctx, params, ids)
+	if err != nil {
+		log.Fatalf("Error extracting categories: %v", err)
 	}
 
-	cityClient, err := grpc.NewCityClient(context.Background(), apiURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	productClient, err := grpc.NewProductClient(context.Background(), apiURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Load data into PostgreSQL (you need to implement the Postgres insertion logic here)
 
-	categorySvc := service.NewCategoryService(categoryClient)
-	citySvc := service.NewCityService(cityClient)
-	productSvc := service.NewProductService(productClient)
+	fmt.Println("Successfully extracted and processed categories:", categories)
 }

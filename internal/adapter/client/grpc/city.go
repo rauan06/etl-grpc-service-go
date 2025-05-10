@@ -10,27 +10,27 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type CityGrpcClient struct {
+type CityClient struct {
 	conn    *grpc.ClientConn
 	service pb.CityClient
 }
 
-func NewCityClient(ctx context.Context, url string) (*CityGrpcClient, error) {
+func NewCityClient(ctx context.Context, url string) (*CityClient, error) {
 	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
-	return &CityGrpcClient{
+	return &CityClient{
 		conn:    conn,
 		service: pb.NewCityClient(conn),
 	}, nil
 }
 
-func (c *CityGrpcClient) Close() {
+func (c *CityClient) Close() {
 	c.conn.Close()
 }
 
-func (c *CityGrpcClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
+func (c *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
 	resp, err := c.service.List(ctx, &pb.CityListReq{
 		ListParams: &pb.ListParamsSt{
 			Page:     params.Page,
@@ -63,7 +63,7 @@ func (c *CityGrpcClient) ListCities(ctx context.Context, params domain.ListParam
 	}, nil
 }
 
-func (c *CityGrpcClient) GetCity(ctx context.Context, id string) (*domain.CityMain, error) {
+func (c *CityClient) GetCity(ctx context.Context, id string) (*domain.CityMain, error) {
 	resp, err := c.service.Get(ctx, &pb.CityGetReq{Id: id})
 	if err != nil {
 		return nil, err
