@@ -7,7 +7,6 @@ import (
 
 	"category/internal/adapter/client/grpc"
 	"category/internal/core/domain"
-	"category/internal/core/service"
 )
 
 const (
@@ -23,9 +22,7 @@ func main() {
 	}
 	defer client.Close()
 
-	categoryService := service.NewCategoryService(client)
-
-	categories, err := categoryService.ListCategories(ctx, domain.ListParamsSt{}, []string{})
+	categories, err := client.ListCategories(ctx, domain.ListParamsSt{}, []string{})
 	if err != nil {
 		log.Fatalf("Error extracting categories: %v", err)
 	}

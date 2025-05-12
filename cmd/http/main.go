@@ -8,7 +8,6 @@ import (
 
 	"category/internal/adapter/client/http"
 	"category/internal/core/domain"
-	"category/internal/core/service"
 )
 
 const (
@@ -27,7 +26,6 @@ func main() {
 	client := http.NewCategoryClient(URL)
 
 	// Initialize service with the client
-	categoryService := service.NewCategoryService(client)
 
 	// Extract data
 	// params := domain.ListParamsSt{
@@ -37,7 +35,7 @@ func main() {
 	// }
 	// ids := []string{"123", "456"}
 
-	categories, err := categoryService.ListCategories(ctx, domain.ListParamsSt{}, []string{})
+	categories, err := client.ListCategories(ctx, domain.ListParamsSt{}, []string{})
 	if err != nil {
 		log.Fatalf("Error extracting categories: %v", err)
 	}

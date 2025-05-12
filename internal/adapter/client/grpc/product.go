@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"category/internal/core/domain"
-	pb "category/protos/product/v1"
+	pb "category/protos/product/v1/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

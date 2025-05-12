@@ -6,11 +6,6 @@ import (
 	"category/internal/core/domain"
 )
 
-type CategoryService interface {
-	ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error)
-	GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error)
-}
-
 type CategoryClient interface {
 	ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error)
 	GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error)
