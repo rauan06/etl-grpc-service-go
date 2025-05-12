@@ -3,7 +3,7 @@ syntax = "proto3";
 package price;
 
 import "google/api/annotations.proto";
-import "common.proto";
+import "protos/price/v1/common.proto";
 
 option go_package = "/price/v1;price";
 

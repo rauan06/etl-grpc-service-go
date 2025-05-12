@@ -12,17 +12,17 @@ const (
 	pathProduct = "product"
 )
 
-type productClient struct {
+type ProductClient struct {
 	URL *url.URL
 }
 
-func NewProductClient(URL *url.URL) *productClient {
-	return &productClient{
+func NewProductClient(URL *url.URL) *ProductClient {
+	return &ProductClient{
 		URL.JoinPath(pathProduct),
 	}
 }
 
-func (r *productClient) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
+func (r *ProductClient) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
 	// Format params to url.Values format
 	urlParams := r.URL.Query()
 
@@ -67,7 +67,7 @@ func (r *productClient) ListProducts(ctx context.Context, params domain.ListPara
 	return products, nil
 }
 
-func (r *productClient) GetProduct(ctx context.Context, id string) (*domain.ProductMain, error) {
+func (r *ProductClient) GetProduct(ctx context.Context, id string) (*domain.ProductMain, error) {
 	resp, err := http.Get(r.URL.JoinPath(id).String())
 	if err != nil {
 		return nil, err
