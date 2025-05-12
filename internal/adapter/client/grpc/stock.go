@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	"category/internal/adapter/handler"
 	"category/internal/core/domain"
 	pb "category/protos/store/v1/pb"
 
@@ -35,11 +34,11 @@ func (c *StockClient) Close() {
 func (c *StockClient) ListStores(ctx context.Context, params domain.ListParamsSt, productIds, cityIDs []string) (*domain.StockListRep, error) {
 	page, err := strconv.ParseInt(params.Page, 10, 64)
 	if err != nil {
-		return nil, handler.ErrParseInt64
+		return nil, domain.ErrParseInt64
 	}
 	pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
 	if err != nil {
-		return nil, handler.ErrParseInt64
+		return nil, domain.ErrParseInt64
 	}
 
 	resp, err := c.service.List(ctx, &pb.ProductStockListReq{

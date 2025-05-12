@@ -9,6 +9,10 @@ import (
 type ProductClient interface {
 	ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error)
 	GetProduct(ctx context.Context, id string) (*domain.ProductMain, error)
-	ListStocks(ctx context.Context, params domain.ListParamsSt, productIds, cityIds []string)
-	GetStock(ctx context.Context, productId, cityId string)
+}
+
+type ProductRepo interface {
+	SaveProduct()
+	UpdateProduct()
+	Delete()
 }

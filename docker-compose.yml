@@ -1,42 +1,103 @@
-version: "3.8"
-
 services:
-  postgres:
+  db-product:
     image: postgres:17
-    container_name: demo-db
+    container_name: db-product
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
       POSTGRES_DB: product
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - ./db-product:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
-      - product-network
+      - etl-network
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  product:
+  demo-product:
     image: b1go/product:latest
     container_name: demo-product
     environment:
-      PG_DSN: postgres://postgres:123456@postgres:5432/product?sslmode=disable
+      PG_DSN: postgres://postgres:123456@db-product:5432/product?sslmode=disable
     ports:
       - "8080:80"
       - "5050:5050"
     depends_on:
-      postgres:
+      db-product:
         condition: service_healthy
     networks:
-      - product-network
+      - etl-network
+
+  db-store:
+    image: postgres:17
+    container_name: db-store
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: store
+    volumes:
+      - ./db-store:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - etl-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  demo-store:
+    image: b1go/store:latest
+    container_name: demo-store
+    environment:
+      PG_DSN: postgres://postgres:123456@db-store:5432/store?sslmode=disable
+    ports:
+      - "8081:80"
+      - "5051:5050"
+    depends_on:
+      db-store:
+        condition: service_healthy
+    networks:
+      - etl-network
+
+  db-price:
+    image: postgres:17
+    container_name: db-price
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: price
+    volumes:
+      - ./db-price:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - etl-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  demo-price:
+    image: b1go/price:latest
+    container_name: demo-price
+    environment:
+      PG_DSN: postgres://postgres:123456@db-price:5432/price?sslmode=disable
+    ports:
+      - "8082:80"
+      - "5052:5050"
+    depends_on:
+      db-price:
+        condition: service_healthy
+    networks:
+      - etl-network
 
 networks:
-  product-network:
+  etl-network:
     driver: bridge
-
-volumes:
-  db-data:
