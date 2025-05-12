@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"strconv"
 
 	"category/internal/core/domain"
 	pb "category/protos/product/v1"
@@ -31,10 +32,13 @@ func (c *CategoryClient) Close() {
 }
 
 func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
+	page, err := strconv.ParseInt(params.Page, 10, 64)
+	pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
+
 	resp, err := c.service.List(ctx, &pb.CategoryListReq{
 		ListParams: &pb.ListParamsSt{
-			Page:     params.Page,
-			PageSize: params.PageSize,
+			Page:     page,
+			PageSize: pageSize,
 			Sort:     params.Sort,
 		},
 		Ids: ids,
@@ -56,8 +60,8 @@ func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 
 	return &domain.CategoryListRep{
 		PaginationInfo: domain.PaginationInfoSt{
-			Page:     resp.PaginationInfo.Page,
-			PageSize: resp.PaginationInfo.PageSize,
+			Page:     strconv.FormatInt(resp.PaginationInfo.Page, 10),
+			PageSize: strconv.FormatInt(resp.PaginationInfo.PageSize, 10),
 		},
 		Results: results,
 	}, nil

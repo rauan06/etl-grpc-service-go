@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: demo-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: product
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - product-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  product:
+    image: b1go/product:latest
+    container_name: demo-product
+    environment:
+      PG_DSN: postgres://postgres:123456@postgres:5432/product?sslmode=disable
+    ports:
+      - "8080:80"
+      - "5050:5050"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - product-network
+
+networks:
+  product-network:
+    driver: bridge
+
+volumes:
+  db-data:

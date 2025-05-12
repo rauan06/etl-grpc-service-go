@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"category/internal/core/domain"
 )
@@ -27,8 +26,14 @@ func NewCategoryClient(URL *url.URL) *CategoryClient {
 func (r *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
 	// Format params to url.Values format
 	urlParams := r.URL.Query()
-	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
-	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	if params.Page != "" {
+		urlParams.Set("list_params.page", params.Page)
+	}
+
+	if params.PageSize != "" {
+		urlParams.Set("list_params.page_size", params.PageSize)
+	}
 
 	for _, sortVal := range params.Sort {
 		urlParams.Add("list_params.sort", sortVal)

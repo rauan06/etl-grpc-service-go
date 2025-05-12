@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	apiURL = "api.com"
+	apiURL = "http://0.0.0.0:8080"
 )
 
 func main() {
@@ -30,14 +30,14 @@ func main() {
 	categoryService := service.NewCategoryService(client)
 
 	// Extract data
-	params := domain.ListParamsSt{
-		Page:     1,
-		PageSize: 10,
-		Sort:     []string{"name"},
-	}
-	ids := []int64{123, 456}
+	// params := domain.ListParamsSt{
+	// 	Page:     "1",
+	// 	PageSize: "10",
+	// 	Sort:     []string{"name"},
+	// }
+	// ids := []string{"123", "456"}
 
-	categories, err := categoryService.ListCategories(ctx, params, ids)
+	categories, err := categoryService.ListCategories(ctx, domain.ListParamsSt{}, []string{})
 	if err != nil {
 		log.Fatalf("Error extracting categories: %v", err)
 	}

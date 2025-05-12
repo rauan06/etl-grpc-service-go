@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 const (
@@ -26,8 +25,14 @@ func NewProductClient(URL *url.URL) *productClient {
 func (r *productClient) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
 	// Format params to url.Values format
 	urlParams := r.URL.Query()
-	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
-	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	if params.Page != "" {
+		urlParams.Set("list_params.page", params.Page)
+	}
+
+	if params.PageSize != "" {
+		urlParams.Set("list_params.page_size", params.PageSize)
+	}
 
 	if withCategory {
 		urlParams.Set("with_category", "true")

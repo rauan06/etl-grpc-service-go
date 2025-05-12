@@ -7,8 +7,8 @@ import (
 )
 
 type CityService interface {
-	ListCities(ctx context.Context, params domain.ListParamsSt, ids []int64) (*domain.CityListRep, error)
-	GetCity(ctx context.Context, id int64) (*domain.CityMain, error)
+	ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error)
+	GetCity(ctx context.Context, id string) (*domain.CityMain, error)
 }
 
 type CityClient interface {

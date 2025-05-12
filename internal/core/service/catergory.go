@@ -4,8 +4,6 @@ import (
 	"category/internal/core/domain"
 	"category/internal/core/port"
 	"context"
-	"fmt"
-	"strconv"
 )
 
 type CategoryService struct {
@@ -18,20 +16,20 @@ func NewCategoryService(client port.CategoryClient) *CategoryService {
 	}
 }
 
-func (s *CategoryService) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []int64) (*domain.CategoryListRep, error) {
-	stringIds := make([]string, len(ids))
-	for i, id := range ids {
-		stringIds[i] = strconv.FormatInt(id, 10)
-	}
+func (s *CategoryService) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
+	// stringIds := make([]string, len(ids))
+	// for i, id := range ids {
+	// 	stringIds[i] = strconv.FormatInt(id, 10)
+	// }
 
-	return s.client.ListCategories(context.Background(), params, stringIds)
+	return s.client.ListCategories(context.Background(), params, ids)
 }
 
-func (s *CategoryService) GetCategory(ctx context.Context, id int64) (*domain.CategoryMain, error) {
-	if id < 0 {
-		return nil, fmt.Errorf("id cannot be empty")
-	}
-	stringId := strconv.FormatInt(id, 10)
+func (s *CategoryService) GetCategory(ctx context.Context, id string) (*domain.CategoryMain, error) {
+	// if id < 0 {
+	// 	return nil, fmt.Errorf("id cannot be empty")
+	// }
+	// stringId := strconv.FormatInt(id, 10)
 
-	return s.client.GetCategory(context.Background(), stringId)
+	return s.client.GetCategory(context.Background(), id)
 }
