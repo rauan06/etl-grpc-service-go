@@ -6,7 +6,6 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
-	"strconv"
 	"time"
 )
 
@@ -29,9 +28,7 @@ func NewProductService(grpcClient port.ProductClient, httpClient port.ProductCli
 	}
 }
 
-func (s *ProductService) Run(ctx context.Context) {
-	s.ctx = ctx
-
+func (s *ProductService) Run() {
 	products := make(chan domain.ProductMain)
 	defer close(products)
 
@@ -66,7 +63,7 @@ func (s *ProductService) SearchProducts(products chan<- domain.ProductMain) {
 	var page int64
 	for {
 		params := domain.ListParamsSt{
-			Page: strconv.FormatInt(page, 10),
+			Page: page,
 		}
 
 		resp, err := s.fetchProducts(s.ctx, params)

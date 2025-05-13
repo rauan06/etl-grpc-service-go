@@ -29,11 +29,11 @@ func NewEtlHandler(categorySvc service.CategoryService, citySvc service.CityServ
 }
 
 func (h *EtlHandler) Start(ctx context.Context, req *genproto.ETLRequest) (*pb.ETLResponse, error) {
-	go h.categorySvc.Run(ctx)
-	go h.citySvc.Run(ctx)
-	go h.priceSvc.Run(ctx)
-	go h.stockSvc.Run(ctx)
-	go h.productSvc.Run(ctx)
+	go h.categorySvc.Run()
+	go h.citySvc.Run()
+	go h.priceSvc.Run()
+	go h.stockSvc.Run()
+	go h.productSvc.Run()
 
 	return &pb.ETLResponse{
 		Code:    "200",
@@ -43,11 +43,11 @@ func (h *EtlHandler) Start(ctx context.Context, req *genproto.ETLRequest) (*pb.E
 }
 
 func (h *EtlHandler) Stop(ctx context.Context, req *genproto.ETLRequest) (*pb.ETLResponse, error) {
-	go h.categorySvc.Stop()
-	go h.citySvc.Stop()
-	go h.priceSvc.Stop()
-	go h.stockSvc.Stop()
-	go h.productSvc.Stop()
+	h.categorySvc.Stop()
+	h.citySvc.Stop()
+	h.priceSvc.Stop()
+	h.stockSvc.Stop()
+	h.productSvc.Stop()
 
 	return &pb.ETLResponse{
 		Code:    "200",

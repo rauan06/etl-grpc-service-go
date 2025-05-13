@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"strconv"
 
 	"category/internal/core/domain"
 	pb "category/protos/product/v1/pb"
@@ -32,31 +31,13 @@ func (c *CategoryClient) Close() {
 }
 
 func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
-	req := &pb.ListParamsSt{
-		Sort: params.Sort,
-	}
-
-	if params.Page != "" {
-		page, err := strconv.ParseInt(params.Page, 10, 64)
-		if err != nil {
-			return nil, domain.ErrParseInt64
-		}
-
-		req.Page = page
-	}
-
-	if params.PageSize != "" {
-		pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
-		if err != nil {
-			return nil, domain.ErrParseInt64
-		}
-
-		req.PageSize = pageSize
-	}
-
 	resp, err := c.service.List(ctx, &pb.CategoryListReq{
-		ListParams: req,
-		Ids:        ids,
+		ListParams: &pb.ListParamsSt{
+			Page:     params.Page,
+			PageSize: params.PageSize,
+			Sort:     params.Sort,
+		},
+		Ids: ids,
 	})
 	if err != nil {
 		return nil, err
@@ -75,8 +56,8 @@ func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 
 	return &domain.CategoryListRep{
 		PaginationInfo: domain.PaginationInfoSt{
-			Page:     strconv.FormatInt(resp.PaginationInfo.Page, 10),
-			PageSize: strconv.FormatInt(resp.PaginationInfo.PageSize, 10),
+			Page:     resp.PaginationInfo.Page,
+			PageSize: resp.PaginationInfo.PageSize,
 		},
 		Results: results,
 	}, nil

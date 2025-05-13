@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"log/slog"
-	"strconv"
 	"time"
 
 	"category/internal/core/domain"
@@ -30,9 +29,7 @@ func NewCategoryService(grpcClient port.CategoryClient, httpClient port.Category
 	}
 }
 
-func (s *CategoryService) Run(ctx context.Context) {
-	s.ctx = ctx
-
+func (s *CategoryService) Run() {
 	categories := make(chan domain.CategoryMain)
 	defer close(categories)
 
@@ -67,7 +64,7 @@ func (s *CategoryService) SearchCategories(categories chan<- domain.CategoryMain
 	var page int64
 	for {
 		params := domain.ListParamsSt{
-			Page: strconv.FormatInt(page, 10),
+			Page: page,
 		}
 
 		resp, err := s.fetchCategories(s.ctx, params)
@@ -100,13 +97,11 @@ func (s *CategoryService) SearchCategories(categories chan<- domain.CategoryMain
 }
 
 func (s *CategoryService) fetchCategories(ctx context.Context, params domain.ListParamsSt) (*domain.CategoryListRep, error) {
-	// Attempt to fetch using gRPC
 	resp, err := s.grpcClient.ListCategories(ctx, params, []string{})
 	if err == nil && len(resp.Results) > 0 {
 		return resp, nil
 	}
 
-	// If gRPC fails or returns no results, try HTTP
 	s.logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
 	resp, err = s.httpClient.ListCategories(ctx, params, []string{})
 	if err != nil {

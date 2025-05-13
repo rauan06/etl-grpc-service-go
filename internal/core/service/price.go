@@ -6,7 +6,6 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
-	"strconv"
 	"time"
 )
 
@@ -29,9 +28,7 @@ func NewPriceService(grpcClient port.PriceClient, httpClient port.PriceClient, c
 	}
 }
 
-func (s *PriceService) Run(ctx context.Context) {
-	s.ctx = ctx
-
+func (s *PriceService) Run() {
 	prices := make(chan domain.PriceMain)
 	defer close(prices)
 
@@ -78,7 +75,7 @@ func (s *PriceService) SearchPrices(prices chan<- domain.PriceMain) {
 	var page int64
 	for {
 		params := domain.ListParamsSt{
-			Page: strconv.FormatInt(page, 10),
+			Page: page,
 		}
 
 		resp, err := s.fetchPrices(s.ctx, params)

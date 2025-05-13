@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"strconv"
 
 	"category/internal/core/domain"
 	pb "category/protos/store/v1/pb"
@@ -32,19 +31,10 @@ func (c *StockClient) Close() {
 }
 
 func (c *StockClient) ListStocks(ctx context.Context, params domain.ListParamsSt, productIds, cityIDs []string) (*domain.StockListRep, error) {
-	page, err := strconv.ParseInt(params.Page, 10, 64)
-	if err != nil {
-		return nil, domain.ErrParseInt64
-	}
-	pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
-	if err != nil {
-		return nil, domain.ErrParseInt64
-	}
-
 	resp, err := c.service.List(ctx, &pb.ProductStockListReq{
 		ListParams: &pb.ListParamsSt{
-			Page:     page,
-			PageSize: pageSize,
+			Page:     params.Page,
+			PageSize: params.PageSize,
 			Sort:     params.Sort,
 		},
 		ProductIds: productIds,
@@ -65,8 +55,8 @@ func (c *StockClient) ListStocks(ctx context.Context, params domain.ListParamsSt
 
 	return &domain.StockListRep{
 		PaginationInfo: domain.PaginationInfoSt{
-			Page:     strconv.FormatInt(resp.PaginationInfo.Page, 10),
-			PageSize: strconv.FormatInt(resp.PaginationInfo.PageSize, 10),
+			Page:     resp.PaginationInfo.Page,
+			PageSize: resp.PaginationInfo.PageSize,
 		},
 		Results: results,
 	}, nil

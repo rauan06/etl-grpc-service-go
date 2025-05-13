@@ -1,12 +1,12 @@
 package domain
 
 type PaginationInfoSt struct {
-	Page     string `json:"page"`
-	PageSize string `json:"page_size"`
+	Page     int64 `json:"page,string"`
+	PageSize int64 `json:"page_size,string"`
 }
 
 type ListParamsSt struct {
-	Page     string   `json:"page"`
-	PageSize string   `json:"page_size"`
+	Page     int64    `json:"page,string"`
+	PageSize int64    `json:"page_size,string"`
 	Sort     []string `json:"sort"`
 }

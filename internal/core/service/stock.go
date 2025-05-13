@@ -6,7 +6,6 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
-	"strconv"
 	"time"
 )
 
@@ -29,9 +28,7 @@ func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, c
 	}
 }
 
-func (s *StockService) Run(ctx context.Context) {
-	s.ctx = ctx
-
+func (s *StockService) Run() {
 	stocks := make(chan domain.StockMain)
 	defer close(stocks)
 
@@ -66,7 +63,7 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 	var page int64
 	for {
 		params := domain.ListParamsSt{
-			Page: strconv.FormatInt(page, 10),
+			Page: page,
 		}
 
 		resp, err := s.fetchStocks(s.ctx, params)
@@ -99,13 +96,11 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 }
 
 func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParamsSt) (*domain.StockListRep, error) {
-	// Attempt to fetch using gRPC
 	resp, err := s.grpcClient.ListStocks(ctx, params, []string{}, []string{})
 	if err == nil && len(resp.Results) > 0 {
 		return resp, nil
 	}
 
-	// If gRPC fails or returns no results, try HTTP
 	s.logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
 	resp, err = s.httpClient.ListStocks(ctx, params, []string{}, []string{})
 	if err != nil {

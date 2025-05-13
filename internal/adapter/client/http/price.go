@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -27,12 +28,12 @@ func (r *PriceClient) ListPrices(ctx context.Context, params domain.ListParamsSt
 	urlParams := r.URL.Query()
 
 	// Set pagination and sorting params
-	if params.Page != "" {
-		urlParams.Set("list_params.page", params.Page)
+	if params.Page >= 0 {
+		urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
 	}
 
-	if params.PageSize != "" {
-		urlParams.Set("list_params.page_size", params.PageSize)
+	if params.PageSize > 0 {
+		urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
 	}
 
 	for _, sortVal := range params.Sort {

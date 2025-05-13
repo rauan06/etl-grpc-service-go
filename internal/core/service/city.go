@@ -6,7 +6,6 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
-	"strconv"
 	"time"
 )
 
@@ -29,9 +28,7 @@ func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cach
 	}
 }
 
-func (s *CityService) Run(ctx context.Context) {
-	s.ctx = ctx
-
+func (s *CityService) Run() {
 	cities := make(chan domain.CityMain)
 	defer close(cities)
 
@@ -66,7 +63,7 @@ func (s *CityService) SearchCities(cities chan<- domain.CityMain) {
 	var page int64
 	for {
 		params := domain.ListParamsSt{
-			Page: strconv.FormatInt(page, 10),
+			Page: page,
 		}
 
 		resp, err := s.fetchCities(s.ctx, params)
