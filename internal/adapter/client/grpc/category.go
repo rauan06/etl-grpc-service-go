@@ -32,22 +32,31 @@ func (c *CategoryClient) Close() {
 }
 
 func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
-	page, err := strconv.ParseInt(params.Page, 10, 64)
-	if err != nil {
-		return nil, domain.ErrParseInt64
+	req := &pb.ListParamsSt{
+		Sort: params.Sort,
 	}
-	pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
-	if err != nil {
-		return nil, domain.ErrParseInt64
+
+	if params.Page != "" {
+		page, err := strconv.ParseInt(params.Page, 10, 64)
+		if err != nil {
+			return nil, domain.ErrParseInt64
+		}
+
+		req.Page = page
+	}
+
+	if params.PageSize != "" {
+		pageSize, err := strconv.ParseInt(params.PageSize, 10, 64)
+		if err != nil {
+			return nil, domain.ErrParseInt64
+		}
+
+		req.PageSize = pageSize
 	}
 
 	resp, err := c.service.List(ctx, &pb.CategoryListReq{
-		ListParams: &pb.ListParamsSt{
-			Page:     page,
-			PageSize: pageSize,
-			Sort:     params.Sort,
-		},
-		Ids: ids,
+		ListParams: req,
+		Ids:        ids,
 	})
 	if err != nil {
 		return nil, err

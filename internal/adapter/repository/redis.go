@@ -1,81 +1,82 @@
 package redis
 
-// import (
-// 	"context"
-// 	"time"
+import (
+	"context"
 
-// 	"github.com/go-redis/redis"
-// )
+	"category/internal/core/port"
 
-// /**
-//  * Redis implements port.CacheRepository interface
-//  * and provides an access to the redis library
-//  */
-// type Redis struct {
-// 	client *redis.Client
-// }
+	"github.com/go-redis/redis"
+)
 
-// // New creates a new instance of Redis
-// func New(ctx context.Context, config *config.Redis) (port.CacheRepository, error) {
-// 	client := redis.NewClient(&redis.Options{
-// 		Addr:     config.Addr,
-// 		Password: config.Password,
-// 		DB:       0,
-// 	})
+/**
+ * Redis implements port.CacheRepository interface
+ * and provides an access to the redis library
+ */
+type Redis struct {
+	client *redis.Client
+}
 
-// 	_, err := client.Ping().Result()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+// New creates a new instance of Redis
+func New(ctx context.Context, config *config.Redis) (port.CacheRepository, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     config.Addr,
+		Password: config.Password,
+		DB:       0,
+	})
 
-// 	return &Redis{client}, nil
-// }
+	_, err := client.Ping().Result()
+	if err != nil {
+		return nil, err
+	}
 
-// // Set stores the value in the redis database
-// func (r *Redis) Set(ctx context.Context, key string, value []byte) error {
-// 	return r.client.Set(ctx, key, value, 0).Err()
-// }
+	return &Redis{client}, nil
+}
 
-// // Get retrieves the value from the redis database
-// func (r *Redis) Get(ctx context.Context, key string) ([]byte, error) {
-// 	res, err := r.client.Get(ctx, key).Result()
-// 	bytes := []byte(res)
-// 	return bytes, err
-// }
+// Set stores the value in the redis database
+func (r *Redis) Set(ctx context.Context, key string, value []byte) error {
+	return r.client.Set(ctx, key, value, 0).Err()
+}
 
-// // Delete removes the value from the redis database
-// func (r *Redis) Delete(ctx context.Context, key string) error {
-// 	return r.client.Del(ctx, key).Err()
-// }
+// Get retrieves the value from the redis database
+func (r *Redis) Get(ctx context.Context, key string) ([]byte, error) {
+	res, err := r.client.Get(ctx, key).Result()
+	bytes := []byte(res)
+	return bytes, err
+}
 
-// // DeleteByPrefix removes the value from the redis database with the given prefix
-// func (r *Redis) DeleteByPrefix(ctx context.Context, prefix string) error {
-// 	var cursor uint64
-// 	var keys []string
+// Delete removes the value from the redis database
+func (r *Redis) Delete(ctx context.Context, key string) error {
+	return r.client.Del(ctx, key).Err()
+}
 
-// 	for {
-// 		var err error
-// 		keys, cursor, err = r.client.Scan(ctx, cursor, prefix, 100).Result()
-// 		if err != nil {
-// 			return err
-// 		}
+// DeleteByPrefix removes the value from the redis database with the given prefix
+func (r *Redis) DeleteByPrefix(ctx context.Context, prefix string) error {
+	var cursor uint64
+	var keys []string
 
-// 		for _, key := range keys {
-// 			err := r.client.Del(ctx, key).Err()
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
+	for {
+		var err error
+		keys, cursor, err = r.client.Scan(ctx, cursor, prefix, 100).Result()
+		if err != nil {
+			return err
+		}
 
-// 		if cursor == 0 {
-// 			break
-// 		}
-// 	}
+		for _, key := range keys {
+			err := r.client.Del(ctx, key).Err()
+			if err != nil {
+				return err
+			}
+		}
 
-// 	return nil
-// }
+		if cursor == 0 {
+			break
+		}
+	}
 
-// // Close closes the connection to the redis database
-// func (r *Redis) Close() error {
-// 	return r.client.Close()
-// }
+	return nil
+}
+
+// Close closes the connection to the redis database
+func (r *Redis) Close() error {
+	return r.client.Close()
+}

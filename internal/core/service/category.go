@@ -2,28 +2,28 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"strconv"
 	"time"
 
 	"category/internal/core/domain"
 	"category/internal/core/port"
+	"category/internal/core/util"
 )
 
 type CategoryService struct {
 	grpcClient port.CategoryClient
 	httpClient port.CategoryClient
 
-	// cache port.CacheRepository
+	cache port.CacheRepository
 }
 
-func NewCategoryService(grpcClient port.CategoryClient, httpCLient port.CategoryClient) *CategoryService {
+func NewCategoryService(grpcClient port.CategoryClient, httpCLient port.CategoryClient, cache port.CacheRepository) *CategoryService {
 	return &CategoryService{
 		grpcClient,
 		httpCLient,
 
-		// cache,
+		cache,
 	}
 }
 
@@ -32,8 +32,11 @@ func (s *CategoryService) Run(ctx context.Context, logger *slog.Logger) error {
 
 	go s.CollectCategories(ctx, categories)
 
+	ctx, cancel := context.WithCancel(ctx)
 	s.SearchCategories(ctx, categories, logger)
+
 	close(categories)
+	cancel()
 
 	return nil
 }
@@ -41,37 +44,36 @@ func (s *CategoryService) Run(ctx context.Context, logger *slog.Logger) error {
 func (s *CategoryService) Stop(ctx context.Context, logger *slog.Logger) {
 	// ctx.Done()
 
-	// err := s.cache.DeleteByPrefix(ctx, "category")
-	// if err != nil {
-	// 	logger.ErrorContext(ctx, "error while deleting category keys from redis")
-	// 	return
-	// }
+	err := s.cache.DeleteByPrefix(ctx, "category")
+	if err != nil {
+		logger.ErrorContext(ctx, "error while deleting category keys from redis")
+		return
+	}
 
 	logger.InfoContext(ctx, "stopped category service gracefully")
 }
 
 func (s *CategoryService) SearchCategories(ctx context.Context, categories chan<- domain.CategoryMain, logger *slog.Logger) {
-	client := s.grpcClient
-	var page int64 = 1
+	var page int64 = 0
 
-	for {
+	for ; ; page++ {
 		params := domain.ListParamsSt{
 			Page: strconv.FormatInt(page, 10),
 		}
-		page++
-
-		resp, err := client.ListCategories(ctx, params, []string{})
+		resp, err := s.grpcClient.ListCategories(ctx, params, []string{})
 		if err != nil {
 			logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
-			client = s.httpClient
-			resp, err = client.ListCategories(ctx, params, []string{})
+		}
+
+		// No results. Try with http
+		if len(resp.Results) == 0 {
+			resp, err = s.httpClient.ListCategories(ctx, params, []string{})
 			if err != nil {
 				logger.ErrorContext(ctx, "both gRPC and HTTP clients failed", "error", err.Error())
 				return
 			}
 		}
 
-		// No results. Wait and try again
 		if len(resp.Results) == 0 {
 			select {
 			case <-ctx.Done():
@@ -96,11 +98,11 @@ func (s *CategoryService) SearchCategories(ctx context.Context, categories chan<
 
 func (s *CategoryService) CollectCategories(ctx context.Context, categories <-chan domain.CategoryMain) {
 	for category := range categories {
-		// data, err := util.Serialize(category)
-		// if err != nil {
-		// 	continue
-		// }
-		// s.cache.Set(ctx, util.GenerateCacheKey("category", category.ID), data)
-		fmt.Println(category)
+		data, err := util.Serialize(category)
+		if err != nil {
+			continue
+		}
+		s.cache.Set(ctx, util.GenerateCacheKey("category", category.ID), data)
+		// fmt.Println(category)
 	}
 }

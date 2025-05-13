@@ -17,7 +17,10 @@ func main() {
 
 	logger := logger.SetupPrettySlog(os.Stdout)
 
-	grpcClient, _ := grpc.NewCategoryClient(ctx, "0.0.0.0:5050")
+	grpcClient, err := grpc.NewCategoryClient(ctx, "0.0.0.0:5050")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	URL, err := url.Parse("http://0.0.0.0:8080")
 	if err != nil {
