@@ -6,7 +6,7 @@ import (
 	"category/internal/core/domain"
 )
 
-type Stocklient interface {
+type StockClient interface {
 	ListStocks(ctx context.Context, params domain.ListParamsSt, productIds, cityIds []string) (*domain.StockListRep, error)
 	GetStock(ctx context.Context, productId, cityId string) (*domain.StockMain, error)
 }

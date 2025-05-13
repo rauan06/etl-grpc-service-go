@@ -98,6 +98,31 @@ services:
     networks:
       - etl-network
 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - etl-network
+
+  # etl-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: etl-service
+  #   environment:
+  #     REDIS_ADDR: redis:6379
+  #   ports:
+  #     - "8099:8099"
+  #   depends_on:
+  #     - redis
+  #     - db-product
+  #     - db-store
+  #     - db-price
+  #   networks:
+  #     - etl-network
+
 networks:
   etl-network:
     driver: bridge

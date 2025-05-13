@@ -16,7 +16,7 @@ type StockClient struct {
 	service pb.ProductStockClient
 }
 
-func NewStoreClient(ctx context.Context, target string) (*StockClient, error) {
+func NewStockClient(ctx context.Context, target string) (*StockClient, error) {
 	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (c *StockClient) Close() {
 	c.conn.Close()
 }
 
-func (c *StockClient) ListStores(ctx context.Context, params domain.ListParamsSt, productIds, cityIDs []string) (*domain.StockListRep, error) {
+func (c *StockClient) ListStocks(ctx context.Context, params domain.ListParamsSt, productIds, cityIDs []string) (*domain.StockListRep, error) {
 	page, err := strconv.ParseInt(params.Page, 10, 64)
 	if err != nil {
 		return nil, domain.ErrParseInt64
@@ -72,7 +72,7 @@ func (c *StockClient) ListStores(ctx context.Context, params domain.ListParamsSt
 	}, nil
 }
 
-func (c *StockClient) GetStore(ctx context.Context, productId, cityId string) (*domain.StockMain, error) {
+func (c *StockClient) GetStock(ctx context.Context, productId, cityId string) (*domain.StockMain, error) {
 	resp, err := c.service.Get(ctx, &pb.ProductStockGetReq{
 		CityId:    cityId,
 		ProductId: productId,

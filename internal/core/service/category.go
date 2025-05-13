@@ -15,20 +15,24 @@ type CategoryService struct {
 	grpcClient port.CategoryClient
 	httpClient port.CategoryClient
 	cache      port.CacheRepository
-	logger     *slog.Logger
-	ctx        context.Context
+
+	logger *slog.Logger
+	ctx    context.Context
 }
 
-func NewCategoryService(grpcClient port.CategoryClient, httpClient port.CategoryClient, cache port.CacheRepository, logger *slog.Logger) *CategoryService {
-	return &CategoryService{
+func NewCategoryService(grpcClient port.CategoryClient, httpClient port.CategoryClient, cache port.CacheRepository, logger *slog.Logger) CategoryService {
+	return CategoryService{
 		grpcClient: grpcClient,
 		httpClient: httpClient,
 		cache:      cache,
 		logger:     logger,
+		ctx:        context.Background(),
 	}
 }
 
 func (s *CategoryService) Run(ctx context.Context) {
+	s.ctx = ctx
+
 	categories := make(chan domain.CategoryMain)
 	defer close(categories)
 
@@ -37,20 +41,24 @@ func (s *CategoryService) Run(ctx context.Context) {
 	s.SearchCategories(categories)
 }
 
-func (s *CategoryService) Status() string {
+func (s *CategoryService) Status() int {
 	if s.ctx == nil {
-		return "service not started"
+		return domain.StatusNotStarted
 	}
 
 	select {
 	case <-s.ctx.Done():
-		return "service is shutdown"
+		return domain.StatusShutdown
 	default:
-		return "service is running..."
+		return domain.StatusRunning
 	}
 }
 
 func (s *CategoryService) Stop() {
+	if s.ctx == nil {
+		return
+	}
+
 	s.ctx.Done()
 	s.logger.InfoContext(s.ctx, "stopped category service gracefully")
 }

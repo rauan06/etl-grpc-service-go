@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package category;
+
+option go_package = "category/genproto;genproto";
+
+import "google/api/annotations.proto";
+
+service CategoryService {
+  rpc Start(ETLRequest) returns (ETLResponse) {
+    option (google.api.http) = {
+      post: "/etl/start"
+      body: "*"
+    };
+  }
+
+  rpc Stop(ETLRequest) returns (ETLResponse) {
+    option (google.api.http) = {
+      post: "/etl/stop"
+      body: "*"
+    };
+  }
+
+  rpc Status(ETLRequest) returns (ETLResponse) {
+    option (google.api.http) = {
+      get: "/etl/status"
+    };
+  }
+}
+
+message ETLRequest {
+  reserved 1, 2;
+}
+
+message ETLResponse {
+    string code = 1;
+    string message = 2;
+    map<string, string> fields = 3;
+}
