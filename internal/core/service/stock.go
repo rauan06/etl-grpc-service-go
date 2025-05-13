@@ -16,15 +16,22 @@ type StockService struct {
 
 	logger *slog.Logger
 	ctx    context.Context
+	cancel context.CancelFunc
+
+	status int
 }
 
 func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, cache port.CacheRepository, logger *slog.Logger) StockService {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return StockService{
 		grpcClient: grpcClient,
 		httpClient: httpClient,
 		cache:      cache,
 		logger:     logger,
-		ctx:        context.Background(),
+		ctx:        ctx,
+		cancel:     cancel,
+		status:     domain.StatusNotStarted,
 	}
 }
 
@@ -34,28 +41,19 @@ func (s *StockService) Run() {
 
 	go s.CollectStocks(stocks)
 
+	s.status = domain.StatusRunning
 	s.SearchStocks(stocks)
+
+	s.status = domain.StatusShutdown
 }
 
 func (s *StockService) Status() int {
-	if s.ctx == nil {
-		return domain.StatusNotStarted
-	}
-
-	select {
-	case <-s.ctx.Done():
-		return domain.StatusShutdown
-	default:
-		return domain.StatusRunning
-	}
+	return s.status
 }
 
 func (s *StockService) Stop() {
-	if s.ctx == nil {
-		return
-	}
-
-	s.ctx.Done()
+	s.cancel()
+	s.status = domain.StatusShutdown
 	s.logger.InfoContext(s.ctx, "stopped stock service gracefully")
 }
 
@@ -82,7 +80,6 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 			}
 		}
 
-		// Stream each result
 		for _, stock := range resp.Results {
 			select {
 			case stocks <- stock:
@@ -101,7 +98,6 @@ func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParams
 		return resp, nil
 	}
 
-	s.logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
 	resp, err = s.httpClient.ListStocks(ctx, params, []string{}, []string{})
 	if err != nil {
 		return nil, err
@@ -125,9 +121,5 @@ func (s *StockService) cacheStock(stock domain.StockMain) error {
 	}
 
 	key := util.GenerateCacheKey("stock", stock.CityId)
-	if err := s.cache.Set(s.ctx, key, data); err != nil {
-		return err
-	}
-
-	return nil
+	return s.cache.Set(s.ctx, key, data)
 }

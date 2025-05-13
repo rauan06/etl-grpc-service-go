@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.21.12
-// source: etl.proto
+// source: protos/etl/v1/etl.proto
 
 package genproto
 
@@ -19,179 +19,179 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CategoryService_Start_FullMethodName  = "/category.CategoryService/Start"
-	CategoryService_Stop_FullMethodName   = "/category.CategoryService/Stop"
-	CategoryService_Status_FullMethodName = "/category.CategoryService/Status"
+	ETLService_Start_FullMethodName  = "/category.ETLService/Start"
+	ETLService_Stop_FullMethodName   = "/category.ETLService/Stop"
+	ETLService_Status_FullMethodName = "/category.ETLService/Status"
 )
 
-// CategoryServiceClient is the client API for CategoryService service.
+// ETLServiceClient is the client API for ETLService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CategoryServiceClient interface {
+type ETLServiceClient interface {
 	Start(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
 	Stop(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
 	Status(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
 }
 
-type categoryServiceClient struct {
+type eTLServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCategoryServiceClient(cc grpc.ClientConnInterface) CategoryServiceClient {
-	return &categoryServiceClient{cc}
+func NewETLServiceClient(cc grpc.ClientConnInterface) ETLServiceClient {
+	return &eTLServiceClient{cc}
 }
 
-func (c *categoryServiceClient) Start(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
+func (c *eTLServiceClient) Start(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ETLResponse)
-	err := c.cc.Invoke(ctx, CategoryService_Start_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ETLService_Start_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *categoryServiceClient) Stop(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
+func (c *eTLServiceClient) Stop(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ETLResponse)
-	err := c.cc.Invoke(ctx, CategoryService_Stop_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ETLService_Stop_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *categoryServiceClient) Status(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
+func (c *eTLServiceClient) Status(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ETLResponse)
-	err := c.cc.Invoke(ctx, CategoryService_Status_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ETLService_Status_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CategoryServiceServer is the server API for CategoryService service.
-// All implementations must embed UnimplementedCategoryServiceServer
+// ETLServiceServer is the server API for ETLService service.
+// All implementations must embed UnimplementedETLServiceServer
 // for forward compatibility.
-type CategoryServiceServer interface {
+type ETLServiceServer interface {
 	Start(context.Context, *ETLRequest) (*ETLResponse, error)
 	Stop(context.Context, *ETLRequest) (*ETLResponse, error)
 	Status(context.Context, *ETLRequest) (*ETLResponse, error)
-	mustEmbedUnimplementedCategoryServiceServer()
+	mustEmbedUnimplementedETLServiceServer()
 }
 
-// UnimplementedCategoryServiceServer must be embedded to have
+// UnimplementedETLServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedCategoryServiceServer struct{}
+type UnimplementedETLServiceServer struct{}
 
-func (UnimplementedCategoryServiceServer) Start(context.Context, *ETLRequest) (*ETLResponse, error) {
+func (UnimplementedETLServiceServer) Start(context.Context, *ETLRequest) (*ETLResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
 }
-func (UnimplementedCategoryServiceServer) Stop(context.Context, *ETLRequest) (*ETLResponse, error) {
+func (UnimplementedETLServiceServer) Stop(context.Context, *ETLRequest) (*ETLResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedCategoryServiceServer) Status(context.Context, *ETLRequest) (*ETLResponse, error) {
+func (UnimplementedETLServiceServer) Status(context.Context, *ETLRequest) (*ETLResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
-func (UnimplementedCategoryServiceServer) mustEmbedUnimplementedCategoryServiceServer() {}
-func (UnimplementedCategoryServiceServer) testEmbeddedByValue()                         {}
+func (UnimplementedETLServiceServer) mustEmbedUnimplementedETLServiceServer() {}
+func (UnimplementedETLServiceServer) testEmbeddedByValue()                    {}
 
-// UnsafeCategoryServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CategoryServiceServer will
+// UnsafeETLServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ETLServiceServer will
 // result in compilation errors.
-type UnsafeCategoryServiceServer interface {
-	mustEmbedUnimplementedCategoryServiceServer()
+type UnsafeETLServiceServer interface {
+	mustEmbedUnimplementedETLServiceServer()
 }
 
-func RegisterCategoryServiceServer(s grpc.ServiceRegistrar, srv CategoryServiceServer) {
-	// If the following call pancis, it indicates UnimplementedCategoryServiceServer was
+func RegisterETLServiceServer(s grpc.ServiceRegistrar, srv ETLServiceServer) {
+	// If the following call pancis, it indicates UnimplementedETLServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&CategoryService_ServiceDesc, srv)
+	s.RegisterService(&ETLService_ServiceDesc, srv)
 }
 
-func _CategoryService_Start_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ETLService_Start_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ETLRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CategoryServiceServer).Start(ctx, in)
+		return srv.(ETLServiceServer).Start(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CategoryService_Start_FullMethodName,
+		FullMethod: ETLService_Start_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CategoryServiceServer).Start(ctx, req.(*ETLRequest))
+		return srv.(ETLServiceServer).Start(ctx, req.(*ETLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CategoryService_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ETLService_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ETLRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CategoryServiceServer).Stop(ctx, in)
+		return srv.(ETLServiceServer).Stop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CategoryService_Stop_FullMethodName,
+		FullMethod: ETLService_Stop_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CategoryServiceServer).Stop(ctx, req.(*ETLRequest))
+		return srv.(ETLServiceServer).Stop(ctx, req.(*ETLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CategoryService_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ETLService_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ETLRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CategoryServiceServer).Status(ctx, in)
+		return srv.(ETLServiceServer).Status(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CategoryService_Status_FullMethodName,
+		FullMethod: ETLService_Status_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CategoryServiceServer).Status(ctx, req.(*ETLRequest))
+		return srv.(ETLServiceServer).Status(ctx, req.(*ETLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// CategoryService_ServiceDesc is the grpc.ServiceDesc for CategoryService service.
+// ETLService_ServiceDesc is the grpc.ServiceDesc for ETLService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var CategoryService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "category.CategoryService",
-	HandlerType: (*CategoryServiceServer)(nil),
+var ETLService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "category.ETLService",
+	HandlerType: (*ETLServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Start",
-			Handler:    _CategoryService_Start_Handler,
+			Handler:    _ETLService_Start_Handler,
 		},
 		{
 			MethodName: "Stop",
-			Handler:    _CategoryService_Stop_Handler,
+			Handler:    _ETLService_Stop_Handler,
 		},
 		{
 			MethodName: "Status",
-			Handler:    _CategoryService_Status_Handler,
+			Handler:    _ETLService_Status_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "etl.proto",
+	Metadata: "protos/etl/v1/etl.proto",
 }

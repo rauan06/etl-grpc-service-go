@@ -6,7 +6,7 @@ option go_package = "category/genproto;genproto";
 
 import "google/api/annotations.proto";
 
-service CategoryService {
+service ETLService {
   rpc Start(ETLRequest) returns (ETLResponse) {
     option (google.api.http) = {
       post: "/etl/start"

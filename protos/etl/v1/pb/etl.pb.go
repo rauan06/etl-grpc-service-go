@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v3.21.12
-// source: etl.proto
+// source: protos/etl/v1/etl.proto
 
 package genproto
 
@@ -30,7 +30,7 @@ type ETLRequest struct {
 
 func (x *ETLRequest) Reset() {
 	*x = ETLRequest{}
-	mi := &file_etl_proto_msgTypes[0]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *ETLRequest) String() string {
 func (*ETLRequest) ProtoMessage() {}
 
 func (x *ETLRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_etl_proto_msgTypes[0]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *ETLRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ETLRequest.ProtoReflect.Descriptor instead.
 func (*ETLRequest) Descriptor() ([]byte, []int) {
-	return file_etl_proto_rawDescGZIP(), []int{0}
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{0}
 }
 
 type ETLResponse struct {
@@ -69,7 +69,7 @@ type ETLResponse struct {
 
 func (x *ETLResponse) Reset() {
 	*x = ETLResponse{}
-	mi := &file_etl_proto_msgTypes[1]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -81,7 +81,7 @@ func (x *ETLResponse) String() string {
 func (*ETLResponse) ProtoMessage() {}
 
 func (x *ETLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_etl_proto_msgTypes[1]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -94,7 +94,7 @@ func (x *ETLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ETLResponse.ProtoReflect.Descriptor instead.
 func (*ETLResponse) Descriptor() ([]byte, []int) {
-	return file_etl_proto_rawDescGZIP(), []int{1}
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ETLResponse) GetCode() string {
@@ -118,11 +118,11 @@ func (x *ETLResponse) GetFields() map[string]string {
 	return nil
 }
 
-var File_etl_proto protoreflect.FileDescriptor
+var File_protos_etl_v1_etl_proto protoreflect.FileDescriptor
 
-const file_etl_proto_rawDesc = "" +
+const file_protos_etl_v1_etl_proto_rawDesc = "" +
 	"\n" +
-	"\tetl.proto\x12\bcategory\x1a\x1cgoogle/api/annotations.proto\"\x18\n" +
+	"\x17protos/etl/v1/etl.proto\x12\bcategory\x1a\x1cgoogle/api/annotations.proto\"\x18\n" +
 	"\n" +
 	"ETLRequestJ\x04\b\x01\x10\x02J\x04\b\x02\x10\x03\"\xb1\x01\n" +
 	"\vETLResponse\x12\x12\n" +
@@ -131,39 +131,40 @@ const file_etl_proto_rawDesc = "" +
 	"\x06fields\x18\x03 \x03(\v2!.category.ETLResponse.FieldsEntryR\x06fields\x1a9\n" +
 	"\vFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xf5\x01\n" +
-	"\x0fCategoryService\x12K\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xf0\x01\n" +
+	"\n" +
+	"ETLService\x12K\n" +
 	"\x05Start\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x15\x82\xd3\xe4\x93\x02\x0f:\x01*\"\n" +
 	"/etl/start\x12I\n" +
 	"\x04Stop\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/etl/stop\x12J\n" +
 	"\x06Status\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/etl/statusB\x1cZ\x1acategory/genproto;genprotob\x06proto3"
 
 var (
-	file_etl_proto_rawDescOnce sync.Once
-	file_etl_proto_rawDescData []byte
+	file_protos_etl_v1_etl_proto_rawDescOnce sync.Once
+	file_protos_etl_v1_etl_proto_rawDescData []byte
 )
 
-func file_etl_proto_rawDescGZIP() []byte {
-	file_etl_proto_rawDescOnce.Do(func() {
-		file_etl_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_etl_proto_rawDesc), len(file_etl_proto_rawDesc)))
+func file_protos_etl_v1_etl_proto_rawDescGZIP() []byte {
+	file_protos_etl_v1_etl_proto_rawDescOnce.Do(func() {
+		file_protos_etl_v1_etl_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_etl_v1_etl_proto_rawDesc), len(file_protos_etl_v1_etl_proto_rawDesc)))
 	})
-	return file_etl_proto_rawDescData
+	return file_protos_etl_v1_etl_proto_rawDescData
 }
 
-var file_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_etl_proto_goTypes = []any{
+var file_protos_etl_v1_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_protos_etl_v1_etl_proto_goTypes = []any{
 	(*ETLRequest)(nil),  // 0: category.ETLRequest
 	(*ETLResponse)(nil), // 1: category.ETLResponse
 	nil,                 // 2: category.ETLResponse.FieldsEntry
 }
-var file_etl_proto_depIdxs = []int32{
+var file_protos_etl_v1_etl_proto_depIdxs = []int32{
 	2, // 0: category.ETLResponse.fields:type_name -> category.ETLResponse.FieldsEntry
-	0, // 1: category.CategoryService.Start:input_type -> category.ETLRequest
-	0, // 2: category.CategoryService.Stop:input_type -> category.ETLRequest
-	0, // 3: category.CategoryService.Status:input_type -> category.ETLRequest
-	1, // 4: category.CategoryService.Start:output_type -> category.ETLResponse
-	1, // 5: category.CategoryService.Stop:output_type -> category.ETLResponse
-	1, // 6: category.CategoryService.Status:output_type -> category.ETLResponse
+	0, // 1: category.ETLService.Start:input_type -> category.ETLRequest
+	0, // 2: category.ETLService.Stop:input_type -> category.ETLRequest
+	0, // 3: category.ETLService.Status:input_type -> category.ETLRequest
+	1, // 4: category.ETLService.Start:output_type -> category.ETLResponse
+	1, // 5: category.ETLService.Stop:output_type -> category.ETLResponse
+	1, // 6: category.ETLService.Status:output_type -> category.ETLResponse
 	4, // [4:7] is the sub-list for method output_type
 	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -171,26 +172,26 @@ var file_etl_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_etl_proto_init() }
-func file_etl_proto_init() {
-	if File_etl_proto != nil {
+func init() { file_protos_etl_v1_etl_proto_init() }
+func file_protos_etl_v1_etl_proto_init() {
+	if File_protos_etl_v1_etl_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_etl_proto_rawDesc), len(file_etl_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_etl_v1_etl_proto_rawDesc), len(file_protos_etl_v1_etl_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_etl_proto_goTypes,
-		DependencyIndexes: file_etl_proto_depIdxs,
-		MessageInfos:      file_etl_proto_msgTypes,
+		GoTypes:           file_protos_etl_v1_etl_proto_goTypes,
+		DependencyIndexes: file_protos_etl_v1_etl_proto_depIdxs,
+		MessageInfos:      file_protos_etl_v1_etl_proto_msgTypes,
 	}.Build()
-	File_etl_proto = out.File
-	file_etl_proto_goTypes = nil
-	file_etl_proto_depIdxs = nil
+	File_protos_etl_v1_etl_proto = out.File
+	file_protos_etl_v1_etl_proto_goTypes = nil
+	file_protos_etl_v1_etl_proto_depIdxs = nil
 }

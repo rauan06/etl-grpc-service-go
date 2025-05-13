@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	apiURL = "http://0.0.0.0:8080"
+	apiURL = "http://0.0.0.0:8082"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// Initialize http client
-	client := http.NewCategoryClient(URL)
+	client := http.NewPriceClient(URL)
 
 	// Initialize service with the client
 
@@ -35,7 +35,7 @@ func main() {
 	// }
 	// ids := []string{"123", "456"}
 
-	categories, err := client.ListCategories(ctx, domain.ListParamsSt{}, []string{})
+	categories, err := client.ListPrices(ctx, domain.ListParamsSt{}, []string{}, []string{})
 	if err != nil {
 		log.Fatalf("Error extracting categories: %v", err)
 	}

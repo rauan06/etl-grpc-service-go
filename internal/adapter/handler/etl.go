@@ -15,7 +15,9 @@ type EtlHandler struct {
 	stockSvc    service.StockService
 	productSvc  service.ProductService
 
-	pb.UnimplementedCategoryServiceServer
+	status int
+
+	pb.UnimplementedETLServiceServer
 }
 
 func NewEtlHandler(categorySvc service.CategoryService, citySvc service.CityService, priceSvc service.PriceService, stockSvc service.StockService, productSvc service.ProductService) *EtlHandler {
@@ -25,6 +27,7 @@ func NewEtlHandler(categorySvc service.CategoryService, citySvc service.CityServ
 		priceSvc:    priceSvc,
 		stockSvc:    stockSvc,
 		productSvc:  productSvc,
+		status:      domain.StatusNotStarted,
 	}
 }
 
@@ -59,7 +62,7 @@ func (h *EtlHandler) Stop(ctx context.Context, req *genproto.ETLRequest) (*pb.ET
 func (h *EtlHandler) Status(ctx context.Context, req *genproto.ETLRequest) (*pb.ETLResponse, error) {
 	return &pb.ETLResponse{
 		Code:    "200",
-		Message: "ETL is running",
+		Message: "ETL is " + domain.StatusToString(h.status),
 		Fields: map[string]string{
 			"category_status": domain.StatusToString(h.categorySvc.Status()),
 			"city_status":     domain.StatusToString(h.citySvc.Status()),

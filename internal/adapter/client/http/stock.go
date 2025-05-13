@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	pathStock = "stock" // Define the base path for the stock service
+	pathStock = "product_stock"
 )
 
 type StockClient struct {

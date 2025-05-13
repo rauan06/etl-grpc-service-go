@@ -27,10 +27,6 @@ func GenerateCacheKeyParams(params ...any) string {
 }
 
 func Serialize(data any) ([]byte, error) {
-	if data == nil {
-		return []byte{}, nil
-	}
-
 	return json.Marshal(data)
 }
 

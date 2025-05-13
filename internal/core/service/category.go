@@ -17,15 +17,22 @@ type CategoryService struct {
 
 	logger *slog.Logger
 	ctx    context.Context
+	cancel context.CancelFunc
+
+	status int
 }
 
 func NewCategoryService(grpcClient port.CategoryClient, httpClient port.CategoryClient, cache port.CacheRepository, logger *slog.Logger) CategoryService {
+	ctx, cancel := context.WithCancel(context.Background()) // <- create cancelable context
+
 	return CategoryService{
 		grpcClient: grpcClient,
 		httpClient: httpClient,
 		cache:      cache,
 		logger:     logger,
-		ctx:        context.Background(),
+		ctx:        ctx,
+		cancel:     cancel,
+		status:     domain.StatusNotStarted,
 	}
 }
 
@@ -35,28 +42,22 @@ func (s *CategoryService) Run() {
 
 	go s.CollectCategories(categories)
 
+	s.status = domain.StatusRunning
+
 	s.SearchCategories(categories)
+
+	s.status = domain.StatusShutdown
 }
 
 func (s *CategoryService) Status() int {
-	if s.ctx == nil {
-		return domain.StatusNotStarted
-	}
-
-	select {
-	case <-s.ctx.Done():
-		return domain.StatusShutdown
-	default:
-		return domain.StatusRunning
-	}
+	return s.status
 }
 
 func (s *CategoryService) Stop() {
-	if s.ctx == nil {
-		return
-	}
+	s.cancel()
 
-	s.ctx.Done()
+	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped category service gracefully")
 }
 
@@ -97,12 +98,12 @@ func (s *CategoryService) SearchCategories(categories chan<- domain.CategoryMain
 }
 
 func (s *CategoryService) fetchCategories(ctx context.Context, params domain.ListParamsSt) (*domain.CategoryListRep, error) {
+	// Attempt to fetch using gRPC
 	resp, err := s.grpcClient.ListCategories(ctx, params, []string{})
 	if err == nil && len(resp.Results) > 0 {
 		return resp, nil
 	}
 
-	s.logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
 	resp, err = s.httpClient.ListCategories(ctx, params, []string{})
 	if err != nil {
 		return nil, err

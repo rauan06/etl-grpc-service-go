@@ -16,46 +16,43 @@ type CityService struct {
 
 	logger *slog.Logger
 	ctx    context.Context
+	cancel context.CancelFunc
+
+	status int
 }
 
 func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cache port.CacheRepository, logger *slog.Logger) CityService {
+	ctx, cancel := context.WithCancel(context.Background())
 	return CityService{
 		grpcClient: grpcClient,
 		httpClient: httpClient,
 		cache:      cache,
 		logger:     logger,
-		ctx:        context.Background(),
+		ctx:        ctx,
+		cancel:     cancel,
+		status:     domain.StatusNotStarted,
 	}
 }
 
 func (s *CityService) Run() {
+	s.status = domain.StatusRunning
+
 	cities := make(chan domain.CityMain)
 	defer close(cities)
 
 	go s.CollectCities(cities)
-
 	s.SearchCities(cities)
+
+	s.status = domain.StatusShutdown
 }
 
 func (s *CityService) Status() int {
-	if s.ctx == nil {
-		return domain.StatusNotStarted
-	}
-
-	select {
-	case <-s.ctx.Done():
-		return domain.StatusShutdown
-	default:
-		return domain.StatusRunning
-	}
+	return s.status
 }
 
 func (s *CityService) Stop() {
-	if s.ctx == nil {
-		return
-	}
-
-	s.ctx.Done()
+	s.cancel()
+	s.status = domain.StatusShutdown
 	s.logger.InfoContext(s.ctx, "stopped city service gracefully")
 }
 
@@ -102,8 +99,6 @@ func (s *CityService) fetchCities(ctx context.Context, params domain.ListParamsS
 		return resp, nil
 	}
 
-	// If gRPC fails or returns no results, try HTTP
-	s.logger.WarnContext(ctx, "gRPC failed, retrying with HTTP", "error", err.Error())
 	resp, err = s.httpClient.ListCities(ctx, params, []string{})
 	if err != nil {
 		return nil, err

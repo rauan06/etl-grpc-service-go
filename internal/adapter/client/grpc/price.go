@@ -15,8 +15,8 @@ type PriceClient struct {
 	service pb.ProductPriceClient
 }
 
-func NewPriceClient(ctx context.Context, target string) (*PriceClient, error) {
-	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewPriceClient(ctx context.Context, url string) (*PriceClient, error) {
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

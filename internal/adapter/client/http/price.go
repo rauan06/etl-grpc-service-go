@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	pathPrice = "price"
+	pathPrice = "product_price"
 )
 
 type PriceClient struct {
