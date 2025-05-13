@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"category/internal/core/port"
+	"category/pkg/config"
 
 	"github.com/go-redis/redis"
 )
@@ -17,11 +18,11 @@ type Redis struct {
 }
 
 // New creates a new instance of Redis
-func New(ctx context.Context, config *config.Redis) (port.CacheRepository, error) {
+func New(ctx context.Context, config *config.Config) (port.CacheRepository, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     config.Addr,
-		Password: config.Password,
-		DB:       0,
+		Addr:     config.RedisURI,
+		Password: config.RedisPassword,
+		DB:       config.RedisDB,
 	})
 
 	_, err := client.Ping().Result()
@@ -34,19 +35,19 @@ func New(ctx context.Context, config *config.Redis) (port.CacheRepository, error
 
 // Set stores the value in the redis database
 func (r *Redis) Set(ctx context.Context, key string, value []byte) error {
-	return r.client.Set(ctx, key, value, 0).Err()
+	return r.client.Set(key, value, 0).Err()
 }
 
 // Get retrieves the value from the redis database
 func (r *Redis) Get(ctx context.Context, key string) ([]byte, error) {
-	res, err := r.client.Get(ctx, key).Result()
+	res, err := r.client.Get(key).Result()
 	bytes := []byte(res)
 	return bytes, err
 }
 
 // Delete removes the value from the redis database
 func (r *Redis) Delete(ctx context.Context, key string) error {
-	return r.client.Del(ctx, key).Err()
+	return r.client.Del(key).Err()
 }
 
 // DeleteByPrefix removes the value from the redis database with the given prefix
@@ -56,13 +57,13 @@ func (r *Redis) DeleteByPrefix(ctx context.Context, prefix string) error {
 
 	for {
 		var err error
-		keys, cursor, err = r.client.Scan(ctx, cursor, prefix, 100).Result()
+		keys, cursor, err = r.client.Scan(cursor, prefix, 100).Result()
 		if err != nil {
 			return err
 		}
 
 		for _, key := range keys {
-			err := r.client.Del(ctx, key).Err()
+			err := r.client.Del(key).Err()
 			if err != nil {
 				return err
 			}
