@@ -3,10 +3,10 @@ package service
 import (
 	"category/internal/core/domain"
 	"category/internal/core/port"
+	"category/internal/core/util"
 	"context"
 	"errors"
 	"log/slog"
-	"sync"
 	"time"
 )
 
@@ -20,11 +20,6 @@ type ProductService struct {
 	cancel context.CancelFunc
 
 	status int
-
-	ProductList struct {
-		ListProducts map[string]domain.ProductMain
-		Mu           *sync.Mutex
-	}
 }
 
 func NewProductService(grpcClient port.ProductClient, httpClient port.ProductClient, cache port.CacheRepository, logger *slog.Logger) ProductService {
@@ -38,31 +33,25 @@ func NewProductService(grpcClient port.ProductClient, httpClient port.ProductCli
 		ctx:        ctx,
 		cancel:     cancel,
 		status:     domain.StatusNotStarted,
-
-		ProductList: struct {
-			ListProducts map[string]domain.ProductMain
-			Mu           *sync.Mutex
-		}{
-			map[string]domain.ProductMain{},
-			&sync.Mutex{},
-		},
 	}
 }
 
 func (s *ProductService) Run() {
+	if s.Status() == domain.StatusRunning {
+		return
+	}
+
 	s.ctx, s.cancel = context.WithCancel(s.ctx)
 
 	products := make(chan domain.ProductMain)
-	defer close(products)
 
 	go s.CollectProducts(products)
+	go s.SearchProducts(products)
 
 	s.status = domain.StatusRunning
 
 	s.logger.Info("product service has started")
-	s.SearchProducts(products)
 
-	s.status = domain.StatusShutdown
 }
 
 func (s *ProductService) Status() int {
@@ -76,6 +65,8 @@ func (s *ProductService) Stop() {
 }
 
 func (s *ProductService) SearchProducts(products chan<- domain.ProductMain) {
+	defer close(products)
+
 	var page int64 = 0
 	for {
 		params := domain.ListParamsSt{
@@ -132,10 +123,15 @@ func (s *ProductService) CollectProducts(products <-chan domain.ProductMain) {
 }
 
 func (s *ProductService) cacheProduct(product domain.ProductMain) error {
-	s.ProductList.Mu.Lock()
-	defer s.ProductList.Mu.Unlock()
+	data, err := util.Serialize(product)
+	if err != nil {
+		return err
+	}
 
-	s.ProductList.ListProducts[product.ID] = product
+	key := util.GenerateCacheKey("product", product.ID)
+	if err := s.cache.Set(s.ctx, key, data); err != nil {
+		return err
+	}
 
 	return nil
 }

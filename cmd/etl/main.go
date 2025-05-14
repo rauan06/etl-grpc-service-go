@@ -89,9 +89,10 @@ func main() {
 	priceSvc := service.NewPriceService(grpcPriceClient, priceHttpClient, cache, logger)
 	stockSvc := service.NewStockService(grpcStockClient, stockHttpClient, cache, logger)
 	productSvc := service.NewProductService(grpcProductClient, productHttpClient, cache, logger)
+	collectorSvc := service.NewCollectorService(cache, logger)
 
 	// Create ETL handler
-	h := handler.NewEtlHandler(categorySvc, citySvc, priceSvc, stockSvc, productSvc)
+	h := handler.NewEtlHandler(categorySvc, citySvc, priceSvc, stockSvc, productSvc, collectorSvc)
 	etlPb.RegisterETLServiceServer(grpcServer, h)
 
 	// Register ETL handler to the gRPC server (only ONCE, and pass the handler itself)

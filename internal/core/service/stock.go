@@ -36,17 +36,18 @@ func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, c
 }
 
 func (s *StockService) Run() {
+	if s.Status() == domain.StatusRunning {
+		return
+	}
+
 	stocks := make(chan domain.StockMain)
-	defer close(stocks)
 
 	go s.CollectStocks(stocks)
+	go s.SearchStocks(stocks)
 
 	s.status = domain.StatusRunning
 
 	s.logger.Info("stock service has started")
-	s.SearchStocks(stocks)
-
-	s.status = domain.StatusShutdown
 }
 
 func (s *StockService) Status() int {
@@ -60,6 +61,8 @@ func (s *StockService) Stop() {
 }
 
 func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
+	defer close(stocks)
+
 	var page int64
 	for {
 		params := domain.ListParamsSt{
@@ -68,11 +71,6 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 
 		resp, err := s.fetchStocks(s.ctx, params)
 		if err != nil {
-			s.logger.WarnContext(s.ctx, "both gRPC and HTTP clients failed", "error", err.Error())
-			return
-		}
-
-		if len(resp.Results) == 0 {
 			select {
 			case <-s.ctx.Done():
 				return

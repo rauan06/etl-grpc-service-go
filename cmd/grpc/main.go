@@ -10,13 +10,15 @@ import (
 )
 
 const (
-	apiURL = "0.0.0.0:5434"
+	priceURL   = "0.0.0.0:5052"
+	productURL = "0.0.0.0:5050"
+	stockURL   = "0.0.0.0:5051"
 )
 
 func main() {
 	ctx := context.Background()
 
-	client, err := grpc.NewPriceClient(ctx, apiURL)
+	client, err := grpc.NewPriceClient(ctx, priceURL)
 	if err != nil {
 		log.Fatalf("Error initializing gRPC client: %v", err)
 	}
@@ -24,8 +26,8 @@ func main() {
 
 	categories, err := client.ListPrices(ctx, domain.ListParamsSt{}, []string{}, []string{})
 	if err != nil {
-		log.Fatalf("Error extracting categories: %v", err)
+		log.Fatalf("Error extracting: %v", err)
 	}
 
-	fmt.Println("Successfully extracted and processed categories:", categories)
+	fmt.Println("Successfully extracted and processed:", categories)
 }

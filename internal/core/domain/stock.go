@@ -10,3 +10,11 @@ type StockListRep struct {
 	PaginationInfo PaginationInfoSt `json:"pagination_info"`
 	Results        []StockMain      `json:"results"`
 }
+
+func (s *StockMain) IsValid() bool {
+	if s.ProductId == "" || s.CityId == "" || s.Value < 0 {
+		return false
+	}
+
+	return true
+}

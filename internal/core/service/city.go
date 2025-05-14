@@ -35,17 +35,18 @@ func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cach
 }
 
 func (s *CityService) Run() {
+	if s.Status() == domain.StatusRunning {
+		return
+	}
+
 	cities := make(chan domain.CityMain)
-	defer close(cities)
 
 	go s.CollectCities(cities)
 
 	s.status = domain.StatusRunning
 
 	s.logger.Info("city service has started")
-	s.SearchCities(cities)
-
-	s.status = domain.StatusShutdown
+	go s.SearchCities(cities)
 }
 
 func (s *CityService) Status() int {
@@ -59,6 +60,8 @@ func (s *CityService) Stop() {
 }
 
 func (s *CityService) SearchCities(cities chan<- domain.CityMain) {
+	defer close(cities)
+
 	var page int64
 	for {
 		params := domain.ListParamsSt{
@@ -67,11 +70,6 @@ func (s *CityService) SearchCities(cities chan<- domain.CityMain) {
 
 		resp, err := s.fetchCities(s.ctx, params)
 		if err != nil {
-			s.logger.WarnContext(s.ctx, "both gRPC and HTTP clients failed", "error", err.Error())
-			return
-		}
-
-		if len(resp.Results) == 0 {
 			select {
 			case <-s.ctx.Done():
 				return

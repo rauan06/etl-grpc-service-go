@@ -12,3 +12,11 @@ type CategoryListRep struct {
 	PaginationInfo PaginationInfoSt `json:"pagination_info"`
 	Results        []CategoryMain   `json:"results"`
 }
+
+func (c *CategoryMain) IsValid() bool {
+	if c.CreatedAt == "" || c.UpdatedAt == "" || c.Deleted || c.ID == "" || c.Name == "" {
+		return false
+	}
+
+	return true
+}

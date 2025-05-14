@@ -36,17 +36,18 @@ func NewPriceService(grpcClient port.PriceClient, httpClient port.PriceClient, c
 }
 
 func (s *PriceService) Run() {
+	if s.Status() == domain.StatusRunning {
+		return
+	}
+
 	prices := make(chan domain.PriceMain)
-	defer close(prices)
 
 	go s.CollectPrices(prices)
+	go s.SearchPrices(prices)
 
 	s.status = domain.StatusRunning
 
 	s.logger.Info("price service has started")
-	s.SearchPrices(prices)
-
-	s.status = domain.StatusShutdown
 }
 
 func (s *PriceService) Status() int {
@@ -60,6 +61,8 @@ func (s *PriceService) Stop() {
 }
 
 func (s *PriceService) SearchPrices(prices chan<- domain.PriceMain) {
+	defer close(prices)
+
 	var page int64
 	for {
 		params := domain.ListParamsSt{
@@ -68,11 +71,6 @@ func (s *PriceService) SearchPrices(prices chan<- domain.PriceMain) {
 
 		resp, err := s.fetchPrices(s.ctx, params)
 		if err != nil {
-			s.logger.WarnContext(s.ctx, "both gRPC and HTTP clients failed", "error", err.Error())
-			return
-		}
-
-		if len(resp.Results) == 0 {
 			select {
 			case <-s.ctx.Done():
 				return

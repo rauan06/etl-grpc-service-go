@@ -37,17 +37,18 @@ func NewCategoryService(grpcClient port.CategoryClient, httpClient port.Category
 }
 
 func (s *CategoryService) Run() {
+	if s.Status() == domain.StatusRunning {
+		return
+	}
+
 	categories := make(chan domain.CategoryMain)
-	defer close(categories)
 
 	go s.CollectCategories(categories)
 
 	s.status = domain.StatusRunning
 
 	s.logger.Info("category service has started")
-	s.SearchCategories(categories)
-
-	s.status = domain.StatusShutdown
+	go s.SearchCategories(categories)
 }
 
 func (s *CategoryService) Status() int {
@@ -63,6 +64,8 @@ func (s *CategoryService) Stop() {
 }
 
 func (s *CategoryService) SearchCategories(categories chan<- domain.CategoryMain) {
+	defer close(categories)
+
 	var page int64
 	for {
 		params := domain.ListParamsSt{
@@ -71,11 +74,6 @@ func (s *CategoryService) SearchCategories(categories chan<- domain.CategoryMain
 
 		resp, err := s.fetchCategories(s.ctx, params)
 		if err != nil {
-			s.logger.WarnContext(s.ctx, "both gRPC and HTTP clients failed", "error", err.Error())
-			return
-		}
-
-		if len(resp.Results) == 0 {
 			select {
 			case <-s.ctx.Done():
 				return

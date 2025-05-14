@@ -2,6 +2,8 @@ package redis
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"category/internal/core/port"
 	"category/pkg/config"
@@ -35,7 +37,8 @@ func New(ctx context.Context, config *config.Config) (port.CacheRepository, erro
 
 // Set stores the value in the redis database
 func (r *Redis) Set(ctx context.Context, key string, value []byte) error {
-	return r.client.Set(key, value, 0).Err()
+	ttl := 3 * time.Minute
+	return r.client.Set(key, value, ttl).Err()
 }
 
 // Get retrieves the value from the redis database
@@ -75,6 +78,29 @@ func (r *Redis) DeleteByPrefix(ctx context.Context, prefix string) error {
 	}
 
 	return nil
+}
+
+func (r *Redis) Scan(pattern string) ([]string, error) {
+	var cursor uint64
+	var result = []string{}
+
+	pattern = pattern + "*"
+
+	for {
+		keys, nextCursor, err := r.client.Scan(cursor, pattern, 30).Result()
+		if err != nil {
+			return nil, fmt.Errorf("scan failed: %w", err)
+		}
+
+		result = append(result, keys...)
+
+		cursor = nextCursor
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return result, nil
 }
 
 // Close closes the connection to the redis database

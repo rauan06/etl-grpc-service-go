@@ -10,3 +10,7 @@ type PriceListRep struct {
 	PaginationInfo PaginationInfoSt `json:"pagination_info"`
 	Results        []PriceMain      `json:"results"`
 }
+
+func (p *PriceMain) IsValid() bool {
+	return !(p.ProductId == "" || p.CityId == "" || p.Price < 0)
+}

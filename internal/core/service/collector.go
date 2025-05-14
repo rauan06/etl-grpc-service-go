@@ -5,26 +5,20 @@ import (
 	"category/internal/core/port"
 	"category/internal/core/util"
 	"context"
+	"encoding/json"
+	"errors"
 	"log/slog"
-	"maps"
-	"sync"
-	"sync/atomic"
+	"reflect"
 	"time"
 )
 
 type CollectorService struct {
-	svc    ProductService
 	cache  port.CacheRepository
 	logger *slog.Logger
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	status      int
-	ProductList struct {
-		listProducts map[string]domain.ProductMain
-		loaded       atomic.Bool
-		mu           *sync.Mutex
-	}
+	status int
 }
 
 func NewCollectorService(cache port.CacheRepository, logger *slog.Logger) CollectorService {
@@ -36,26 +30,20 @@ func NewCollectorService(cache port.CacheRepository, logger *slog.Logger) Collec
 		ctx:    ctx,
 		cancel: cancel,
 		status: domain.StatusNotStarted,
-
-		ProductList: struct {
-			listProducts map[string]domain.ProductMain
-			loaded       atomic.Bool
-			mu           *sync.Mutex
-		}{
-			listProducts: map[string]domain.ProductMain{},
-			mu:           &sync.Mutex{},
-		},
 	}
 }
 
 func (s *CollectorService) Run() {
-	go s.startLoadingProducts()
+	if s.Status() == domain.StatusRunning {
+		return
+	}
 
 	s.status = domain.StatusRunning
 
-	s.collectProductDetails()
+	products := make(chan domain.FullProduct)
 
-	s.status = domain.StatusShutdown
+	go s.collectProductDetails(products)
+	go s.storeProductDetails(products)
 }
 
 func (s *CollectorService) Status() int {
@@ -68,22 +56,88 @@ func (s *CollectorService) Stop() {
 	s.logger.InfoContext(s.ctx, "stopped collector service gracefully")
 }
 
-func (s *CollectorService) collectProductDetails() {
+func (s *CollectorService) collectProductDetails(products chan<- domain.FullProduct) {
+	defer close(products)
+
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
 		default:
-			if s.ProductList.loaded.Load() {
-				// Need to collect 5 data
-				// 1. Validate product data
-				// 2. Collect categoories
-				// 3. Collect cities
-				// 4. Collect stocks
-				// 5. Collect prices
+			productKeys, err := s.cache.Scan("product")
+			if err != nil {
+				s.logger.Error("error scanning prefix on redis", "error", err.Error())
+				return
 			}
-			time.Sleep(3 * time.Second)
+
+			priceKeys, err := s.cache.Scan("price")
+			if err != nil {
+				s.logger.Error("error scanning prefix on redis", "error", err.Error())
+				return
+			}
+
+			stockKeys, err := s.cache.Scan("stock")
+			if err != nil {
+				s.logger.Error("error scanning prefix on redis", "error", err.Error())
+				return
+			}
+
+			var productList []domain.ProductMain
+			var priceList []domain.PriceMain
+			var stockList []domain.StockMain
+			s.fetchKeysToSlice(productKeys, &productList)
+			s.fetchKeysToSlice(priceKeys, &priceList)
+			s.fetchKeysToSlice(stockKeys, &stockList)
+
+			if len(productList) == 0 {
+				time.Sleep(3 * time.Second)
+				continue
+			}
+
+			// Group prices and stocks by product ID
+			productIDToPrices := make(map[string][]domain.PriceMain)
+			for _, price := range priceList {
+				if price.IsValid() {
+					productIDToPrices[price.ProductId] = append(productIDToPrices[price.ProductId], price)
+				}
+			}
+
+			productIDToStocks := make(map[string][]domain.StockMain)
+			for _, stock := range stockList {
+				if stock.IsValid() {
+					productIDToStocks[stock.ProductId] = append(productIDToStocks[stock.ProductId], stock)
+				}
+			}
+
+			var fullProds []domain.FullProduct
+			for _, prod := range productList {
+				fullProd := domain.FullProduct{
+					ProductMain: prod,
+					Prices:      productIDToPrices[prod.ID],
+					Stocks:      productIDToStocks[prod.ID],
+				}
+
+				if !fullProd.IsValid() {
+					continue
+				}
+
+				fullProds = append(fullProds, fullProd)
+			}
+
+			for _, prod := range fullProds {
+				select {
+				case products <- prod:
+				case <-s.ctx.Done():
+					return
+				}
+			}
 		}
+	}
+}
+
+func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduct) {
+	for product := range products {
+		s.logger.Info("fetched valid product", "product", product)
 	}
 }
 
@@ -92,27 +146,41 @@ func (s *CollectorService) getCache(serviceName, id string) ([]byte, error) {
 	return s.cache.Get(s.ctx, key)
 }
 
-func (s *CollectorService) startLoadingProducts() {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			s.loadProducts()
-		case <-s.ctx.Done():
-			return
-		}
+func (s *CollectorService) fetchKeysToSlice(keys []string, dst interface{}) error {
+	dstVal := reflect.ValueOf(dst)
+	if dstVal.Kind() != reflect.Ptr || dstVal.Elem().Kind() != reflect.Slice {
+		return errors.New("dst must be a pointer to a slice")
 	}
+
+	sliceVal := dstVal.Elem()
+	elemType := sliceVal.Type().Elem() // type of individual item
+
+	for _, key := range keys {
+		data, err := s.cache.Get(s.ctx, key)
+		if err != nil {
+			continue
+		}
+
+		itemPtr := reflect.New(elemType) // create pointer to T
+		if err := json.Unmarshal(data, itemPtr.Interface()); err != nil {
+			continue
+		}
+
+		sliceVal.Set(reflect.Append(sliceVal, itemPtr.Elem()))
+	}
+
+	return nil
 }
 
-func (s *CollectorService) loadProducts() {
-	s.ProductList.mu.Lock()
-	defer s.ProductList.mu.Unlock()
+func (s *CollectorService) fetchKey(category, key string, dst interface{}) error {
+	data, err := s.getCache(category, key)
+	if err != nil {
+		return err
+	}
 
-	s.svc.ProductList.Mu.Lock()
-	defer s.svc.ProductList.Mu.Unlock()
+	if err := json.Unmarshal(data, &category); err != nil {
+		return err
+	}
 
-	maps.Copy(s.ProductList.listProducts, s.svc.ProductList.ListProducts)
-	s.ProductList.loaded.Store(true)
+	return nil
 }
