@@ -40,6 +40,8 @@ func (s *PriceService) Run() {
 		return
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	prices := make(chan domain.PriceMain)
 
 	go s.CollectPrices(prices)
@@ -50,13 +52,23 @@ func (s *PriceService) Run() {
 	s.logger.Info("price service has started")
 }
 
+func (s *PriceService) GetServiceName() string {
+	return "Price"
+}
+
 func (s *PriceService) Status() int {
 	return s.status
 }
 
 func (s *PriceService) Stop() {
+	if s.status == domain.StatusShutdown {
+		return
+	}
+
 	s.cancel()
+
 	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped price service gracefully")
 }
 

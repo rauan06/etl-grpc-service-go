@@ -23,7 +23,7 @@ type CategoryService struct {
 }
 
 func NewCategoryService(grpcClient port.CategoryClient, httpClient port.CategoryClient, cache port.CacheRepository, logger *slog.Logger) CategoryService {
-	ctx, cancel := context.WithCancel(context.Background()) // <- create cancelable context
+	ctx, cancel := context.WithCancel(context.Background())
 
 	return CategoryService{
 		grpcClient: grpcClient,
@@ -41,6 +41,8 @@ func (s *CategoryService) Run() {
 		return
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	categories := make(chan domain.CategoryMain)
 
 	go s.CollectCategories(categories)
@@ -49,6 +51,10 @@ func (s *CategoryService) Run() {
 
 	s.logger.Info("category service has started")
 	go s.SearchCategories(categories)
+}
+
+func (s *CategoryService) GetServiceName() string {
+	return "Category"
 }
 
 func (s *CategoryService) Status() int {

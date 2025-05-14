@@ -41,7 +41,7 @@ func (s *ProductService) Run() {
 		return
 	}
 
-	s.ctx, s.cancel = context.WithCancel(s.ctx)
+	s.ctx, s.cancel = context.WithCancel(context.Background())
 
 	products := make(chan domain.ProductMain)
 
@@ -54,13 +54,23 @@ func (s *ProductService) Run() {
 
 }
 
+func (s *ProductService) GetServiceName() string {
+	return "Product"
+}
+
 func (s *ProductService) Status() int {
 	return s.status
 }
 
 func (s *ProductService) Stop() {
+	if s.status == domain.StatusShutdown {
+		return
+	}
+
 	s.cancel()
+
 	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped product service gracefully")
 }
 

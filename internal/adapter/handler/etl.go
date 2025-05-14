@@ -3,7 +3,6 @@ package handler
 import (
 	"category/internal/core/domain"
 	"category/internal/core/port"
-	"category/internal/core/service"
 	pb "category/protos/etl/v1/pb"
 	"context"
 	"encoding/json"
@@ -11,12 +10,7 @@ import (
 )
 
 type EtlHandler struct {
-	categorySvc  service.CategoryService
-	citySvc      service.CityService
-	priceSvc     service.PriceService
-	stockSvc     service.StockService
-	productSvc   service.ProductService
-	collectorSVc service.CollectorService
+	svcs []port.Service
 
 	logger *slog.Logger
 	cache  port.CacheRepository
@@ -25,27 +19,23 @@ type EtlHandler struct {
 	pb.UnimplementedETLServiceServer
 }
 
-func NewEtlHandler(categorySvc service.CategoryService, citySvc service.CityService, priceSvc service.PriceService, stockSvc service.StockService, productSvc service.ProductService, collectorSvc service.CollectorService, cache port.CacheRepository, logger *slog.Logger) *EtlHandler {
-	return &EtlHandler{
-		categorySvc:  categorySvc,
-		citySvc:      citySvc,
-		priceSvc:     priceSvc,
-		stockSvc:     stockSvc,
-		productSvc:   productSvc,
-		collectorSVc: collectorSvc,
-		status:       domain.StatusNotStarted,
-		cache:        cache,
-		logger:       logger,
+func NewEtlHandler(cache port.CacheRepository, logger *slog.Logger, services ...port.Service) *EtlHandler {
+	h := &EtlHandler{
+		svcs:   []port.Service{},
+		status: domain.StatusNotStarted,
+		cache:  cache,
+		logger: logger,
 	}
+
+	h.svcs = append(h.svcs, services...)
+
+	return h
 }
 
 func (h *EtlHandler) Start(ctx context.Context, req *pb.ETLRequest) (*pb.ETLResponse, error) {
-	h.categorySvc.Run()
-	h.citySvc.Run()
-	h.priceSvc.Run()
-	h.stockSvc.Run()
-	h.productSvc.Run()
-	h.collectorSVc.Run()
+	for _, svc := range h.svcs {
+		svc.Run()
+	}
 
 	return &pb.ETLResponse{
 		Code:    "200",
@@ -55,12 +45,9 @@ func (h *EtlHandler) Start(ctx context.Context, req *pb.ETLRequest) (*pb.ETLResp
 }
 
 func (h *EtlHandler) Stop(ctx context.Context, req *pb.ETLRequest) (*pb.ETLResponse, error) {
-	h.categorySvc.Stop()
-	h.citySvc.Stop()
-	h.priceSvc.Stop()
-	h.stockSvc.Stop()
-	h.productSvc.Stop()
-	h.collectorSVc.Stop()
+	for _, svc := range h.svcs {
+		svc.Stop()
+	}
 
 	return &pb.ETLResponse{
 		Code:    "200",
@@ -70,18 +57,17 @@ func (h *EtlHandler) Stop(ctx context.Context, req *pb.ETLRequest) (*pb.ETLRespo
 }
 
 func (h *EtlHandler) Status(ctx context.Context, req *pb.ETLRequest) (*pb.ETLResponse, error) {
-	return &pb.ETLResponse{
+	resp := &pb.ETLResponse{
 		Code:    "200",
 		Message: "ETL " + domain.StatusToString(h.status),
-		Fields: map[string]string{
-			"category_status":  domain.StatusToString(h.categorySvc.Status()),
-			"city_status":      domain.StatusToString(h.citySvc.Status()),
-			"price_status":     domain.StatusToString(h.priceSvc.Status()),
-			"stock_status":     domain.StatusToString(h.stockSvc.Status()),
-			"product_status":   domain.StatusToString(h.productSvc.Status()),
-			"collector_status": domain.StatusToString(h.collectorSVc.Status()),
-		},
-	}, nil
+		Fields:  map[string]string{},
+	}
+
+	for _, svc := range h.svcs {
+		resp.Fields[svc.GetServiceName()] = domain.StatusToString(svc.Status())
+	}
+
+	return resp, nil
 }
 
 func (h *EtlHandler) GetValidProducts(ctx context.Context, req *pb.ETLRequest) (*pb.FullProductListResponse, error) {
@@ -107,7 +93,7 @@ func (h *EtlHandler) GetValidProducts(ctx context.Context, req *pb.ETLRequest) (
 		err = json.Unmarshal(data, &item) // Pass a pointer to the item
 		if err != nil {
 			h.logger.ErrorContext(ctx, "error unmarshalling data", "error", err.Error())
-			continue // Skip to the next key if unmarshalling fails
+			continue
 		}
 
 		res = append(res, item)
@@ -153,11 +139,9 @@ func (h *EtlHandler) GetValidProducts(ctx context.Context, req *pb.ETLRequest) (
 			})
 		}
 
-		// Add the populated FullProduct to the response slice
 		response = append(response, &item)
 	}
 
-	// Return the FullProductListResponse with pagination information
 	return &pb.FullProductListResponse{
 		Results: response,
 	}, nil

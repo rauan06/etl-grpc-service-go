@@ -38,6 +38,8 @@ func (s *CollectorService) Run() {
 		return
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	s.status = domain.StatusRunning
 
 	products := make(chan domain.FullProduct)
@@ -47,13 +49,23 @@ func (s *CollectorService) Run() {
 	s.logger.Info("collector service has started")
 }
 
+func (s *CollectorService) GetServiceName() string {
+	return "Collector"
+}
+
 func (s *CollectorService) Status() int {
 	return s.status
 }
 
 func (s *CollectorService) Stop() {
+	if s.status == domain.StatusShutdown {
+		return
+	}
+
 	s.cancel()
+
 	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped collector service gracefully")
 }
 
@@ -148,6 +160,8 @@ func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduc
 		if err != nil {
 			s.logger.ErrorContext(s.ctx, "error while setting to redis", "error", err)
 		}
+
+		s.logger.InfoContext(s.ctx, "stored full product")
 	}
 }
 

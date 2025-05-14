@@ -39,6 +39,8 @@ func (s *CityService) Run() {
 		return
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	cities := make(chan domain.CityMain)
 
 	go s.CollectCities(cities)
@@ -49,13 +51,23 @@ func (s *CityService) Run() {
 	go s.SearchCities(cities)
 }
 
+func (s *CityService) GetServiceName() string {
+	return "City"
+}
+
 func (s *CityService) Status() int {
 	return s.status
 }
 
 func (s *CityService) Stop() {
+	if s.status == domain.StatusShutdown {
+		return
+	}
+
 	s.cancel()
+
 	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped city service gracefully")
 }
 

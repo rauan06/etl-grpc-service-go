@@ -1,14 +1,10 @@
 package domain
 
-import "errors"
-
 const (
 	StatusNotStarted = iota
 	StatusRunning
 	StatusShutdown
 )
-
-var ErrParseInt64 = errors.New("couldn't parse int64 to string")
 
 func StatusToString(status int) string {
 	switch status {

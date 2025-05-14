@@ -106,22 +106,22 @@ services:
     networks:
       - etl-network
 
-  etl-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: etl-service
-    environment:
-      REDIS_URI: redis:6379
-    ports:
-      - "8099:8099"
-    depends_on:
-      - redis
-      - demo-price
-      - demo-store
-      - demo-product
-    networks:
-      - etl-network
+  # etl-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: etl-service
+  #   environment:
+  #     REDIS_URI: redis:6379
+  #   ports:
+  #     - "8099:8099"
+  #   depends_on:
+  #     - redis
+  #     - demo-price
+  #     - demo-store
+  #     - demo-product
+  #   networks:
+  #     - etl-network
 
 networks:
   etl-network:

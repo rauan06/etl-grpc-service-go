@@ -7,7 +7,6 @@ import (
 	pb "category/protos/product/v1/pb"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type ProductClient struct {
@@ -15,8 +14,8 @@ type ProductClient struct {
 	service pb.ProductClient
 }
 
-func NewProductClient(ctx context.Context, target string) (*ProductClient, error) {
-	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewProductClient(ctx context.Context, url string) (*ProductClient, error) {
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

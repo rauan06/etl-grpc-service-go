@@ -13,7 +13,8 @@ import (
 	client "category/internal/adapter/client/grpc"
 	clientHttp "category/internal/adapter/client/http"
 	"category/internal/adapter/handler"
-	redis "category/internal/adapter/repository"
+	"category/internal/adapter/repository/redis"
+	"category/internal/core/port"
 	"category/internal/core/service"
 	"category/pkg/config"
 	"category/pkg/lib/logger"
@@ -34,13 +35,52 @@ const (
 	storeHttpPort   = 8081
 	priceHttpPort   = 8082
 
-	dockerGrpcPort  = 5050
-	productGrpcPort = 5050
-	storeGrpcPort   = 5051
-	priceGrpcPort   = 5052
+	dockerGrpcPort         = 5050
+	defaultProductGrpcPort = 5050
+	defaultStoreGrpcPort   = 5051
+	defaultPriceGrpcPort   = 5052
 )
 
+var (
+	productGrpcHost string
+	priceGrpcHost   string
+	storeGrpcHost   string
+
+	productGrpcPort int
+	priceGrpcPort   int
+	storeGrpcPort   int
+)
+
+func isRunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
+}
+
 func main() {
+	if isRunningInDocker() {
+		log.Println("Running inside Docker")
+		productGrpcHost = dockerProductAddress
+		priceGrpcHost = dockerPriceAddress
+		storeGrpcHost = dockerStoreAddress
+	} else {
+		log.Println("Running outside Docker")
+		productGrpcHost = "0.0.0.0"
+		priceGrpcHost = "0.0.0.0"
+		storeGrpcHost = "0.0.0.0"
+	}
+
+	if isRunningInDocker() {
+		productGrpcPort = dockerGrpcPort
+		priceGrpcPort = dockerGrpcPort
+		storeGrpcPort = dockerGrpcPort
+	} else {
+		productGrpcPort = defaultProductGrpcPort
+		priceGrpcPort = defaultPriceGrpcPort
+		storeGrpcPort = defaultStoreGrpcPort
+	}
+
 	ctx := context.Background()
 	cfg := config.LoadConfig()
 	logger := logger.SetupPrettySlog(os.Stdout)
@@ -53,30 +93,11 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// gRPC Clients
-	grpcCategoryClient, err := client.NewCategoryClient(ctx, fmt.Sprintf("%s:%d", dockerProductAddress, dockerGrpcPort))
-	if err != nil {
-		log.Fatalf("Failed to create category client: %v", err)
-	}
-
-	grpcCityClient, err := client.NewCityClient(ctx, fmt.Sprintf("%s:%d", dockerProductAddress, dockerGrpcPort))
-	if err != nil {
-		log.Fatalf("Failed to create city client: %v", err)
-	}
-
-	grpcPriceClient, err := client.NewPriceClient(ctx, fmt.Sprintf("%s:%d", dockerPriceAddress, dockerGrpcPort))
-	if err != nil {
-		log.Fatalf("Failed to create price client: %v", err)
-	}
-
-	grpcStockClient, err := client.NewStockClient(ctx, fmt.Sprintf("%s:%d", dockerStoreAddress, dockerGrpcPort))
-	if err != nil {
-		log.Fatalf("Failed to create stock client: %v", err)
-	}
-
-	grpcProductClient, err := client.NewProductClient(ctx, fmt.Sprintf("%s:%d", dockerProductAddress, dockerGrpcPort))
-	if err != nil {
-		log.Fatalf("Failed to create product client: %v", err)
-	}
+	grpcCategoryClient, _ := client.NewCategoryClient(ctx, fmt.Sprintf("%s:%d", priceGrpcHost, productGrpcPort))
+	grpcCityClient, _ := client.NewCityClient(ctx, fmt.Sprintf("%s:%d", productGrpcHost, productGrpcPort))
+	grpcPriceClient, _ := client.NewPriceClient(ctx, fmt.Sprintf("%s:%d", priceGrpcHost, priceGrpcPort))
+	grpcStockClient, _ := client.NewStockClient(ctx, fmt.Sprintf("%s:%d", storeGrpcHost, storeGrpcPort))
+	grpcProductClient, _ := client.NewProductClient(ctx, fmt.Sprintf("%s:%d", productGrpcHost, productGrpcPort))
 
 	// HTTP Clients
 	productURL, _ := url.Parse(fmt.Sprintf("http://0.0.0.0:%d", productHttpPort))
@@ -103,16 +124,13 @@ func main() {
 	productSvc := service.NewProductService(grpcProductClient, productHttpClient, cache, logger)
 	collectorSvc := service.NewCollectorService(cache, logger)
 
+	svcs := []port.Service{&categorySvc, &citySvc, &priceSvc, &stockSvc, &productSvc, &collectorSvc}
+
 	// Handler
 	h := handler.NewEtlHandler(
-		categorySvc,
-		citySvc,
-		priceSvc,
-		stockSvc,
-		productSvc,
-		collectorSvc,
 		cache,
 		logger,
+		svcs...,
 	)
 
 	// Register gRPC handler

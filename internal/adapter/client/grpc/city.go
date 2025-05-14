@@ -7,7 +7,6 @@ import (
 	pb "category/protos/product/v1/pb"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CityClient struct {
@@ -16,7 +15,7 @@ type CityClient struct {
 }
 
 func NewCityClient(ctx context.Context, url string) (*CityClient, error) {
-	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

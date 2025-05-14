@@ -7,7 +7,6 @@ import (
 	pb "category/protos/price/v1/pb"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type PriceClient struct {
@@ -16,7 +15,7 @@ type PriceClient struct {
 }
 
 func NewPriceClient(ctx context.Context, url string) (*PriceClient, error) {
-	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

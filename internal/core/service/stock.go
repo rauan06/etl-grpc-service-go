@@ -40,6 +40,8 @@ func (s *StockService) Run() {
 		return
 	}
 
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	stocks := make(chan domain.StockMain)
 
 	go s.CollectStocks(stocks)
@@ -50,13 +52,23 @@ func (s *StockService) Run() {
 	s.logger.Info("stock service has started")
 }
 
+func (s *StockService) GetServiceName() string {
+	return "Stock"
+}
+
 func (s *StockService) Status() int {
 	return s.status
 }
 
 func (s *StockService) Stop() {
+	if s.status == domain.StatusShutdown {
+		return
+	}
+
 	s.cancel()
+
 	s.status = domain.StatusShutdown
+
 	s.logger.InfoContext(s.ctx, "stopped stock service gracefully")
 }
 
