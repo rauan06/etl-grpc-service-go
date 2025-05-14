@@ -252,7 +252,7 @@ func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduc
 			s.logger.ErrorContext(s.ctx, "error while setting to redis", "error", err)
 		}
 
-		s.logger.InfoContext(s.ctx, "stored full product")
+		// s.logger.InfoContext(s.ctx, "stored full product")
 	}
 }
 
