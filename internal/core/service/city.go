@@ -6,6 +6,8 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -18,11 +20,14 @@ type CityService struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	status int
+	workers int
+	status  int
 }
 
 func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cache port.CacheRepository, logger *slog.Logger) CityService {
 	ctx, cancel := context.WithCancel(context.Background())
+	workers := runtime.GOMAXPROCS(0) * 3 / 5
+
 	return CityService{
 		grpcClient: grpcClient,
 		httpClient: httpClient,
@@ -30,6 +35,7 @@ func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cach
 		logger:     logger,
 		ctx:        ctx,
 		cancel:     cancel,
+		workers:    workers,
 		status:     domain.StatusNotStarted,
 	}
 }
@@ -74,33 +80,61 @@ func (s *CityService) Stop() {
 func (s *CityService) SearchCities(cities chan<- domain.CityMain) {
 	defer close(cities)
 
+	var wg sync.WaitGroup
+	pageChan := make(chan int64) // Channel for page numbers
+
+	// Worker pool to fetch cities concurrently
+	worker := func() {
+		defer wg.Done()
+		for page := range pageChan {
+			params := domain.ListParamsSt{
+				Page: page,
+			}
+
+			resp, err := s.fetchCities(s.ctx, params)
+			if err != nil {
+				select {
+				case <-s.ctx.Done():
+					return
+				case <-time.After(3 * time.Second):
+					// On error, resend page 0 to restart
+					select {
+					case pageChan <- 0:
+					case <-s.ctx.Done():
+						return
+					}
+					continue
+				}
+			}
+
+			// Stream each result
+			for _, city := range resp.Results {
+				select {
+				case cities <- city:
+				case <-s.ctx.Done():
+					return
+				}
+			}
+		}
+	}
+
+	// Start worker goroutines (adjust number based on your needs)
+	wg.Add(s.workers)
+	for i := 0; i < s.workers; i++ {
+		go worker()
+	}
+
+	// Feed pages to workers
 	var page int64
 	for {
-		params := domain.ListParamsSt{
-			Page: page,
+		select {
+		case pageChan <- page:
+			page++
+		case <-s.ctx.Done():
+			close(pageChan)
+			wg.Wait()
+			return
 		}
-
-		resp, err := s.fetchCities(s.ctx, params)
-		if err != nil {
-			select {
-			case <-s.ctx.Done():
-				return
-			case <-time.After(3 * time.Second):
-				page = 0
-				continue
-			}
-		}
-
-		// Stream each result
-		for _, city := range resp.Results {
-			select {
-			case cities <- city:
-			case <-s.ctx.Done():
-				return
-			}
-		}
-
-		page++
 	}
 }
 

@@ -7,8 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -72,42 +74,122 @@ func (s *CollectorService) Stop() {
 func (s *CollectorService) collectProductDetails(products chan<- domain.FullProduct) {
 	defer close(products)
 
+	var wg sync.WaitGroup
+	errChan := make(chan error, 3) // Buffer for scan errors
+
 	for {
 		select {
 		case <-s.ctx.Done():
+			wg.Wait() // Wait for any ongoing operations
 			return
 		default:
-			productKeys, err := s.cache.Scan("product")
-			if err != nil {
+			// Concurrently scan all three key types
+			var productKeys, priceKeys, stockKeys []string
+
+			wg.Add(3)
+			go func() {
+				defer wg.Done()
+				keys, err := s.cache.Scan("product")
+				if err != nil {
+					errChan <- fmt.Errorf("product scan error: %w", err)
+					return
+				}
+				productKeys = keys
+			}()
+
+			go func() {
+				defer wg.Done()
+				keys, err := s.cache.Scan("price")
+				if err != nil {
+					errChan <- fmt.Errorf("price scan error: %w", err)
+					return
+				}
+				priceKeys = keys
+			}()
+
+			go func() {
+				defer wg.Done()
+				keys, err := s.cache.Scan("stock")
+				if err != nil {
+					errChan <- fmt.Errorf("stock scan error: %w", err)
+					return
+				}
+				stockKeys = keys
+			}()
+
+			wg.Wait()
+
+			// Check for errors
+			select {
+			case err := <-errChan:
 				s.logger.Error("error scanning prefix on redis", "error", err.Error())
 				return
+			default:
 			}
 
-			priceKeys, err := s.cache.Scan("price")
-			if err != nil {
-				s.logger.Error("error scanning prefix on redis", "error", err.Error())
-				return
-			}
-
-			stockKeys, err := s.cache.Scan("stock")
-			if err != nil {
-				s.logger.Error("error scanning prefix on redis", "error", err.Error())
-				return
-			}
-
-			var productList []domain.ProductMain
-			var priceList []domain.PriceMain
-			var stockList []domain.StockMain
-			s.fetchKeysToSlice(productKeys, &productList)
-			s.fetchKeysToSlice(priceKeys, &priceList)
-			s.fetchKeysToSlice(stockKeys, &stockList)
-
-			if len(productList) == 0 {
+			if len(productKeys) == 0 {
 				time.Sleep(3 * time.Second)
 				continue
 			}
 
-			// Group prices and stocks by product ID
+			// Concurrently fetch all data
+			var productList []domain.ProductMain
+			var priceList []domain.PriceMain
+			var stockList []domain.StockMain
+
+			wg.Add(3)
+			go func() {
+				defer wg.Done()
+				s.fetchKeysToSlice(productKeys, &productList)
+			}()
+			go func() {
+				defer wg.Done()
+				s.fetchKeysToSlice(priceKeys, &priceList)
+			}()
+			go func() {
+				defer wg.Done()
+				s.fetchKeysToSlice(stockKeys, &stockList)
+			}()
+			wg.Wait()
+
+			// Process data in parallel using worker pool
+			type productTask struct {
+				product domain.ProductMain
+				prices  []domain.PriceMain
+				stocks  []domain.StockMain
+			}
+
+			taskChan := make(chan productTask, len(productList))
+			resultChan := make(chan domain.FullProduct, len(productList))
+
+			// Worker function
+			worker := func() {
+				defer wg.Done()
+				for task := range taskChan {
+					fullProd := domain.FullProduct{
+						ProductMain: task.product,
+						Prices:      task.prices,
+						Stocks:      task.stocks,
+					}
+
+					if fullProd.IsValid() {
+						select {
+						case resultChan <- fullProd:
+						case <-s.ctx.Done():
+							return
+						}
+					}
+				}
+			}
+
+			// Create worker pool
+			numWorkers := min(10, len(productList))
+			wg.Add(numWorkers)
+			for i := 0; i < numWorkers; i++ {
+				go worker()
+			}
+
+			// Build lookup maps
 			productIDToPrices := make(map[string][]domain.PriceMain)
 			for _, price := range priceList {
 				if price.IsValid() {
@@ -122,24 +204,33 @@ func (s *CollectorService) collectProductDetails(products chan<- domain.FullProd
 				}
 			}
 
-			var fullProds []domain.FullProduct
-			for _, prod := range productList {
-				fullProd := domain.FullProduct{
-					ProductMain: prod,
-					Prices:      productIDToPrices[prod.ID],
-					Stocks:      productIDToStocks[prod.ID],
+			// Distribute tasks
+			go func() {
+				defer close(taskChan)
+				for _, prod := range productList {
+					task := productTask{
+						product: prod,
+						prices:  productIDToPrices[prod.ID],
+						stocks:  productIDToStocks[prod.ID],
+					}
+					select {
+					case taskChan <- task:
+					case <-s.ctx.Done():
+						return
+					}
 				}
+			}()
 
-				if !fullProd.IsValid() {
-					continue
-				}
+			// Collect results
+			go func() {
+				wg.Wait()
+				close(resultChan)
+			}()
 
-				fullProds = append(fullProds, fullProd)
-			}
-
-			for _, prod := range fullProds {
+			// Send results to output channel
+			for fullProd := range resultChan {
 				select {
-				case products <- prod:
+				case products <- fullProd:
 				case <-s.ctx.Done():
 					return
 				}

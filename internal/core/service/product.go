@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -19,11 +21,13 @@ type ProductService struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	status int
+	workers int
+	status  int
 }
 
 func NewProductService(grpcClient port.ProductClient, httpClient port.ProductClient, cache port.CacheRepository, logger *slog.Logger) ProductService {
 	ctx, cancel := context.WithCancel(context.Background())
+	workers := runtime.GOMAXPROCS(0) * 3 / 5
 
 	return ProductService{
 		grpcClient: grpcClient,
@@ -32,6 +36,7 @@ func NewProductService(grpcClient port.ProductClient, httpClient port.ProductCli
 		logger:     logger,
 		ctx:        ctx,
 		cancel:     cancel,
+		workers:    workers,
 		status:     domain.StatusNotStarted,
 	}
 }
@@ -77,32 +82,61 @@ func (s *ProductService) Stop() {
 func (s *ProductService) SearchProducts(products chan<- domain.ProductMain) {
 	defer close(products)
 
-	var page int64 = 0
+	var wg sync.WaitGroup
+	pageChan := make(chan int64) // Channel for page numbers
+
+	// Worker pool to fetch cities concurrently
+	worker := func() {
+		defer wg.Done()
+		for page := range pageChan {
+			params := domain.ListParamsSt{
+				Page: page,
+			}
+
+			resp, err := s.fetchProducts(s.ctx, params)
+			if err != nil {
+				select {
+				case <-s.ctx.Done():
+					return
+				case <-time.After(3 * time.Second):
+					// On error, resend page 0 to restart
+					select {
+					case pageChan <- 0:
+					case <-s.ctx.Done():
+						return
+					}
+					continue
+				}
+			}
+
+			// Stream each result
+			for _, product := range resp.Results {
+				select {
+				case products <- product:
+				case <-s.ctx.Done():
+					return
+				}
+			}
+		}
+	}
+
+	// Start worker goroutines (adjust number based on your needs)
+	wg.Add(s.workers)
+	for i := 0; i < s.workers; i++ {
+		go worker()
+	}
+
+	// Feed pages to workers
+	var page int64
 	for {
-		params := domain.ListParamsSt{
-			Page: page,
+		select {
+		case pageChan <- page:
+			page++
+		case <-s.ctx.Done():
+			close(pageChan)
+			wg.Wait()
+			return
 		}
-
-		resp, err := s.fetchProducts(s.ctx, params)
-		if err != nil {
-			select {
-			case <-s.ctx.Done():
-				return
-			case <-time.After(3 * time.Second):
-				page = 0
-				continue
-			}
-		}
-
-		for _, product := range resp.Results {
-			select {
-			case products <- product:
-			case <-s.ctx.Done():
-				return
-			}
-		}
-
-		page++
 	}
 }
 

@@ -6,6 +6,8 @@ import (
 	"category/internal/core/util"
 	"context"
 	"log/slog"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -18,11 +20,13 @@ type StockService struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	status int
+	workers int
+	status  int
 }
 
 func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, cache port.CacheRepository, logger *slog.Logger) StockService {
 	ctx, cancel := context.WithCancel(context.Background())
+	workers := runtime.GOMAXPROCS(0) * 3 / 5
 
 	return StockService{
 		grpcClient: grpcClient,
@@ -31,6 +35,7 @@ func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, c
 		logger:     logger,
 		ctx:        ctx,
 		cancel:     cancel,
+		workers:    workers,
 		status:     domain.StatusNotStarted,
 	}
 }
@@ -75,35 +80,63 @@ func (s *StockService) Stop() {
 func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 	defer close(stocks)
 
+	var wg sync.WaitGroup
+	pageChan := make(chan int64) // Channel for page numbers
+
+	// Worker pool to fetch cities concurrently
+	worker := func() {
+		defer wg.Done()
+		for page := range pageChan {
+			params := domain.ListParamsSt{
+				Page: page,
+			}
+
+			resp, err := s.fetchStocks(s.ctx, params)
+			if err != nil {
+				select {
+				case <-s.ctx.Done():
+					return
+				case <-time.After(3 * time.Second):
+					// On error, resend page 0 to restart
+					select {
+					case pageChan <- 0:
+					case <-s.ctx.Done():
+						return
+					}
+					continue
+				}
+			}
+
+			// Stream each result
+			for _, stock := range resp.Results {
+				select {
+				case stocks <- stock:
+				case <-s.ctx.Done():
+					return
+				}
+			}
+		}
+	}
+
+	// Start worker goroutines (adjust number based on your needs)
+	wg.Add(s.workers)
+	for i := 0; i < s.workers; i++ {
+		go worker()
+	}
+
+	// Feed pages to workers
 	var page int64
 	for {
-		params := domain.ListParamsSt{
-			Page: page,
+		select {
+		case pageChan <- page:
+			page++
+		case <-s.ctx.Done():
+			close(pageChan)
+			wg.Wait()
+			return
 		}
-
-		resp, err := s.fetchStocks(s.ctx, params)
-		if err != nil {
-			select {
-			case <-s.ctx.Done():
-				return
-			case <-time.After(3 * time.Second):
-				page = 0
-				continue
-			}
-		}
-
-		for _, stock := range resp.Results {
-			select {
-			case stocks <- stock:
-			case <-s.ctx.Done():
-				return
-			}
-		}
-
-		page++
 	}
 }
-
 func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParamsSt) (*domain.StockListRep, error) {
 	resp, err := s.grpcClient.ListStocks(ctx, params, []string{}, []string{})
 	if err == nil && len(resp.Results) > 0 {
