@@ -3,6 +3,7 @@ services:
     image: postgres:17
     container_name: db-product
     environment:
+      REDIS_URI: redis:6379
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
       POSTGRES_DB: product
@@ -117,9 +118,9 @@ services:
       - "8099:8099"
     depends_on:
       - redis
-      - db-product
-      - db-store
-      - db-price
+      - demo-price
+      - demo-store
+      - demo-product
     networks:
       - etl-network
 

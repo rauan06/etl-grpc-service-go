@@ -30,7 +30,7 @@ func LoadConfig() *Config {
 	cfg.DBName = getEnv("DB_NAME", "cafeteria")
 	cfg.DBPort = getEnv("DB_PORT", "5432")
 	cfg.JWTSecret = createMd5Hash(getEnv("JWT_SECRET", "not-so-secret-now-is-it?"))
-	cfg.RedisURI = getEnv("REDIS_URI", "localhost:6379")
+	cfg.RedisURI = getEnv("REDIS_URI", "redis:6379")
 	cfg.RedisPassword = getEnv("REDIS_PASSWORD", "")
 	cfg.RedisDB, _ = strconv.Atoi(getEnv("REDIS_DB", "0"))
 
