@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ETLService_Start_FullMethodName  = "/category.ETLService/Start"
-	ETLService_Stop_FullMethodName   = "/category.ETLService/Stop"
-	ETLService_Status_FullMethodName = "/category.ETLService/Status"
+	ETLService_Start_FullMethodName            = "/category.ETLService/Start"
+	ETLService_Stop_FullMethodName             = "/category.ETLService/Stop"
+	ETLService_Status_FullMethodName           = "/category.ETLService/Status"
+	ETLService_GetValidProducts_FullMethodName = "/category.ETLService/GetValidProducts"
 )
 
 // ETLServiceClient is the client API for ETLService service.
@@ -31,6 +32,7 @@ type ETLServiceClient interface {
 	Start(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
 	Stop(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
 	Status(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*ETLResponse, error)
+	GetValidProducts(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*FullProductListResponse, error)
 }
 
 type eTLServiceClient struct {
@@ -71,6 +73,16 @@ func (c *eTLServiceClient) Status(ctx context.Context, in *ETLRequest, opts ...g
 	return out, nil
 }
 
+func (c *eTLServiceClient) GetValidProducts(ctx context.Context, in *ETLRequest, opts ...grpc.CallOption) (*FullProductListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FullProductListResponse)
+	err := c.cc.Invoke(ctx, ETLService_GetValidProducts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ETLServiceServer is the server API for ETLService service.
 // All implementations must embed UnimplementedETLServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type ETLServiceServer interface {
 	Start(context.Context, *ETLRequest) (*ETLResponse, error)
 	Stop(context.Context, *ETLRequest) (*ETLResponse, error)
 	Status(context.Context, *ETLRequest) (*ETLResponse, error)
+	GetValidProducts(context.Context, *ETLRequest) (*FullProductListResponse, error)
 	mustEmbedUnimplementedETLServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedETLServiceServer) Stop(context.Context, *ETLRequest) (*ETLRes
 }
 func (UnimplementedETLServiceServer) Status(context.Context, *ETLRequest) (*ETLResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
+}
+func (UnimplementedETLServiceServer) GetValidProducts(context.Context, *ETLRequest) (*FullProductListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetValidProducts not implemented")
 }
 func (UnimplementedETLServiceServer) mustEmbedUnimplementedETLServiceServer() {}
 func (UnimplementedETLServiceServer) testEmbeddedByValue()                    {}
@@ -172,6 +188,24 @@ func _ETLService_Status_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ETLService_GetValidProducts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ETLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ETLServiceServer).GetValidProducts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ETLService_GetValidProducts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ETLServiceServer).GetValidProducts(ctx, req.(*ETLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ETLService_ServiceDesc is the grpc.ServiceDesc for ETLService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var ETLService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Status",
 			Handler:    _ETLService_Status_Handler,
+		},
+		{
+			MethodName: "GetValidProducts",
+			Handler:    _ETLService_GetValidProducts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

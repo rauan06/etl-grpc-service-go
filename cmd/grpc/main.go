@@ -18,13 +18,13 @@ const (
 func main() {
 	ctx := context.Background()
 
-	client, err := grpc.NewPriceClient(ctx, priceURL)
+	client, err := grpc.NewStockClient(ctx, stockURL)
 	if err != nil {
 		log.Fatalf("Error initializing gRPC client: %v", err)
 	}
 	defer client.Close()
 
-	categories, err := client.ListPrices(ctx, domain.ListParamsSt{}, []string{}, []string{})
+	categories, err := client.ListStocks(ctx, domain.ListParamsSt{}, []string{}, []string{})
 	if err != nil {
 		log.Fatalf("Error extracting: %v", err)
 	}

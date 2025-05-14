@@ -92,7 +92,7 @@ func main() {
 	collectorSvc := service.NewCollectorService(cache, logger)
 
 	// Create ETL handler
-	h := handler.NewEtlHandler(categorySvc, citySvc, priceSvc, stockSvc, productSvc, collectorSvc)
+	h := handler.NewEtlHandler(categorySvc, citySvc, priceSvc, stockSvc, productSvc, collectorSvc, cache, logger)
 	etlPb.RegisterETLServiceServer(grpcServer, h)
 
 	// Register ETL handler to the gRPC server (only ONCE, and pass the handler itself)

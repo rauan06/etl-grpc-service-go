@@ -26,6 +26,12 @@ service ETLService {
       get: "/etl/status"
     };
   }
+
+  rpc GetValidProducts(ETLRequest) returns (FullProductListResponse) {
+    option (google.api.http) = {
+      get: "/etl/products"
+    };
+  }
 }
 
 message ETLRequest {
@@ -33,7 +39,55 @@ message ETLRequest {
 }
 
 message ETLResponse {
-    string code = 1;
-    string message = 2;
-    map<string, string> fields = 3;
+  string code = 1;
+  string message = 2;
+  map<string, string> fields = 3;
+}
+
+// Response for GetValidProducts
+message FullProductListResponse {
+  repeated FullProduct results = 1;
+  PaginationInfo pagination_info = 2;
+}
+
+message FullProduct {
+  ProductMain product_main = 1;
+  repeated PriceMain price = 2;
+  repeated StockMain stock = 3;
+}
+
+message ProductMain {
+  string created_at = 1;
+  string updated_at = 2;
+  bool deleted = 3;
+  string id = 4;
+  string name = 5;
+  string description = 6;
+  string category_id = 7;
+  CategoryMain category = 8;
+}
+
+message PriceMain {
+  string product_id = 1;
+  string city_id = 2;
+  double price = 3;
+}
+
+message StockMain {
+  string product_id = 1;
+  string city_id = 2;
+  int64 value = 3;
+}
+
+message CategoryMain {
+  string created_at = 1;
+  string updated_at = 2;
+  bool deleted = 3;
+  string id = 4;
+  string name = 5;
+}
+
+message PaginationInfo {
+  int64 page = 1;
+  int64 page_size = 2;
 }

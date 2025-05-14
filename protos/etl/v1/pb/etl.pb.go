@@ -118,6 +118,467 @@ func (x *ETLResponse) GetFields() map[string]string {
 	return nil
 }
 
+// Response for GetValidProducts
+type FullProductListResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Results        []*FullProduct         `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	PaginationInfo *PaginationInfo        `protobuf:"bytes,2,opt,name=pagination_info,json=paginationInfo,proto3" json:"pagination_info,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *FullProductListResponse) Reset() {
+	*x = FullProductListResponse{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FullProductListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FullProductListResponse) ProtoMessage() {}
+
+func (x *FullProductListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FullProductListResponse.ProtoReflect.Descriptor instead.
+func (*FullProductListResponse) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *FullProductListResponse) GetResults() []*FullProduct {
+	if x != nil {
+		return x.Results
+	}
+	return nil
+}
+
+func (x *FullProductListResponse) GetPaginationInfo() *PaginationInfo {
+	if x != nil {
+		return x.PaginationInfo
+	}
+	return nil
+}
+
+type FullProduct struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductMain   *ProductMain           `protobuf:"bytes,1,opt,name=product_main,json=productMain,proto3" json:"product_main,omitempty"`
+	Price         []*PriceMain           `protobuf:"bytes,2,rep,name=price,proto3" json:"price,omitempty"`
+	Stock         []*StockMain           `protobuf:"bytes,3,rep,name=stock,proto3" json:"stock,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FullProduct) Reset() {
+	*x = FullProduct{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FullProduct) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FullProduct) ProtoMessage() {}
+
+func (x *FullProduct) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FullProduct.ProtoReflect.Descriptor instead.
+func (*FullProduct) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *FullProduct) GetProductMain() *ProductMain {
+	if x != nil {
+		return x.ProductMain
+	}
+	return nil
+}
+
+func (x *FullProduct) GetPrice() []*PriceMain {
+	if x != nil {
+		return x.Price
+	}
+	return nil
+}
+
+func (x *FullProduct) GetStock() []*StockMain {
+	if x != nil {
+		return x.Stock
+	}
+	return nil
+}
+
+type ProductMain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CreatedAt     string                 `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Deleted       bool                   `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	Id            string                 `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	CategoryId    string                 `protobuf:"bytes,7,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Category      *CategoryMain          `protobuf:"bytes,8,opt,name=category,proto3" json:"category,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProductMain) Reset() {
+	*x = ProductMain{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProductMain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProductMain) ProtoMessage() {}
+
+func (x *ProductMain) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProductMain.ProtoReflect.Descriptor instead.
+func (*ProductMain) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ProductMain) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *ProductMain) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *ProductMain) GetDeleted() bool {
+	if x != nil {
+		return x.Deleted
+	}
+	return false
+}
+
+func (x *ProductMain) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ProductMain) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ProductMain) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ProductMain) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *ProductMain) GetCategory() *CategoryMain {
+	if x != nil {
+		return x.Category
+	}
+	return nil
+}
+
+type PriceMain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	CityId        string                 `protobuf:"bytes,2,opt,name=city_id,json=cityId,proto3" json:"city_id,omitempty"`
+	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PriceMain) Reset() {
+	*x = PriceMain{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PriceMain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PriceMain) ProtoMessage() {}
+
+func (x *PriceMain) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PriceMain.ProtoReflect.Descriptor instead.
+func (*PriceMain) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PriceMain) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *PriceMain) GetCityId() string {
+	if x != nil {
+		return x.CityId
+	}
+	return ""
+}
+
+func (x *PriceMain) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+type StockMain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	CityId        string                 `protobuf:"bytes,2,opt,name=city_id,json=cityId,proto3" json:"city_id,omitempty"`
+	Value         int64                  `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StockMain) Reset() {
+	*x = StockMain{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StockMain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StockMain) ProtoMessage() {}
+
+func (x *StockMain) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StockMain.ProtoReflect.Descriptor instead.
+func (*StockMain) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *StockMain) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *StockMain) GetCityId() string {
+	if x != nil {
+		return x.CityId
+	}
+	return ""
+}
+
+func (x *StockMain) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+type CategoryMain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CreatedAt     string                 `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Deleted       bool                   `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	Id            string                 `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CategoryMain) Reset() {
+	*x = CategoryMain{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CategoryMain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CategoryMain) ProtoMessage() {}
+
+func (x *CategoryMain) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CategoryMain.ProtoReflect.Descriptor instead.
+func (*CategoryMain) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CategoryMain) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *CategoryMain) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *CategoryMain) GetDeleted() bool {
+	if x != nil {
+		return x.Deleted
+	}
+	return false
+}
+
+func (x *CategoryMain) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CategoryMain) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type PaginationInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int64                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int64                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PaginationInfo) Reset() {
+	*x = PaginationInfo{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PaginationInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaginationInfo) ProtoMessage() {}
+
+func (x *PaginationInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaginationInfo.ProtoReflect.Descriptor instead.
+func (*PaginationInfo) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PaginationInfo) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PaginationInfo) GetPageSize() int64 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
 var File_protos_etl_v1_etl_proto protoreflect.FileDescriptor
 
 const file_protos_etl_v1_etl_proto_rawDesc = "" +
@@ -131,13 +592,54 @@ const file_protos_etl_v1_etl_proto_rawDesc = "" +
 	"\x06fields\x18\x03 \x03(\v2!.category.ETLResponse.FieldsEntryR\x06fields\x1a9\n" +
 	"\vFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xf0\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8d\x01\n" +
+	"\x17FullProductListResponse\x12/\n" +
+	"\aresults\x18\x01 \x03(\v2\x15.category.FullProductR\aresults\x12A\n" +
+	"\x0fpagination_info\x18\x02 \x01(\v2\x18.category.PaginationInfoR\x0epaginationInfo\"\x9d\x01\n" +
+	"\vFullProduct\x128\n" +
+	"\fproduct_main\x18\x01 \x01(\v2\x15.category.ProductMainR\vproductMain\x12)\n" +
+	"\x05price\x18\x02 \x03(\v2\x13.category.PriceMainR\x05price\x12)\n" +
+	"\x05stock\x18\x03 \x03(\v2\x13.category.StockMainR\x05stock\"\x80\x02\n" +
+	"\vProductMain\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x01 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\x02 \x01(\tR\tupdatedAt\x12\x18\n" +
+	"\adeleted\x18\x03 \x01(\bR\adeleted\x12\x0e\n" +
+	"\x02id\x18\x04 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vcategory_id\x18\a \x01(\tR\n" +
+	"categoryId\x122\n" +
+	"\bcategory\x18\b \x01(\v2\x16.category.CategoryMainR\bcategory\"Y\n" +
+	"\tPriceMain\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12\x17\n" +
+	"\acity_id\x18\x02 \x01(\tR\x06cityId\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x01R\x05price\"Y\n" +
+	"\tStockMain\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12\x17\n" +
+	"\acity_id\x18\x02 \x01(\tR\x06cityId\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x03R\x05value\"\x8a\x01\n" +
+	"\fCategoryMain\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x01 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\x02 \x01(\tR\tupdatedAt\x12\x18\n" +
+	"\adeleted\x18\x03 \x01(\bR\adeleted\x12\x0e\n" +
+	"\x02id\x18\x04 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\"A\n" +
+	"\x0ePaginationInfo\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x03R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x03R\bpageSize2\xd4\x02\n" +
 	"\n" +
 	"ETLService\x12K\n" +
 	"\x05Start\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x15\x82\xd3\xe4\x93\x02\x0f:\x01*\"\n" +
 	"/etl/start\x12I\n" +
 	"\x04Stop\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/etl/stop\x12J\n" +
-	"\x06Status\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/etl/statusB\x1cZ\x1acategory/genproto;genprotob\x06proto3"
+	"\x06Status\x12\x14.category.ETLRequest\x1a\x15.category.ETLResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/etl/status\x12b\n" +
+	"\x10GetValidProducts\x12\x14.category.ETLRequest\x1a!.category.FullProductListResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/etl/productsB\x1cZ\x1acategory/genproto;genprotob\x06proto3"
 
 var (
 	file_protos_etl_v1_etl_proto_rawDescOnce sync.Once
@@ -151,25 +653,40 @@ func file_protos_etl_v1_etl_proto_rawDescGZIP() []byte {
 	return file_protos_etl_v1_etl_proto_rawDescData
 }
 
-var file_protos_etl_v1_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_protos_etl_v1_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_protos_etl_v1_etl_proto_goTypes = []any{
-	(*ETLRequest)(nil),  // 0: category.ETLRequest
-	(*ETLResponse)(nil), // 1: category.ETLResponse
-	nil,                 // 2: category.ETLResponse.FieldsEntry
+	(*ETLRequest)(nil),              // 0: category.ETLRequest
+	(*ETLResponse)(nil),             // 1: category.ETLResponse
+	(*FullProductListResponse)(nil), // 2: category.FullProductListResponse
+	(*FullProduct)(nil),             // 3: category.FullProduct
+	(*ProductMain)(nil),             // 4: category.ProductMain
+	(*PriceMain)(nil),               // 5: category.PriceMain
+	(*StockMain)(nil),               // 6: category.StockMain
+	(*CategoryMain)(nil),            // 7: category.CategoryMain
+	(*PaginationInfo)(nil),          // 8: category.PaginationInfo
+	nil,                             // 9: category.ETLResponse.FieldsEntry
 }
 var file_protos_etl_v1_etl_proto_depIdxs = []int32{
-	2, // 0: category.ETLResponse.fields:type_name -> category.ETLResponse.FieldsEntry
-	0, // 1: category.ETLService.Start:input_type -> category.ETLRequest
-	0, // 2: category.ETLService.Stop:input_type -> category.ETLRequest
-	0, // 3: category.ETLService.Status:input_type -> category.ETLRequest
-	1, // 4: category.ETLService.Start:output_type -> category.ETLResponse
-	1, // 5: category.ETLService.Stop:output_type -> category.ETLResponse
-	1, // 6: category.ETLService.Status:output_type -> category.ETLResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	9,  // 0: category.ETLResponse.fields:type_name -> category.ETLResponse.FieldsEntry
+	3,  // 1: category.FullProductListResponse.results:type_name -> category.FullProduct
+	8,  // 2: category.FullProductListResponse.pagination_info:type_name -> category.PaginationInfo
+	4,  // 3: category.FullProduct.product_main:type_name -> category.ProductMain
+	5,  // 4: category.FullProduct.price:type_name -> category.PriceMain
+	6,  // 5: category.FullProduct.stock:type_name -> category.StockMain
+	7,  // 6: category.ProductMain.category:type_name -> category.CategoryMain
+	0,  // 7: category.ETLService.Start:input_type -> category.ETLRequest
+	0,  // 8: category.ETLService.Stop:input_type -> category.ETLRequest
+	0,  // 9: category.ETLService.Status:input_type -> category.ETLRequest
+	0,  // 10: category.ETLService.GetValidProducts:input_type -> category.ETLRequest
+	1,  // 11: category.ETLService.Start:output_type -> category.ETLResponse
+	1,  // 12: category.ETLService.Stop:output_type -> category.ETLResponse
+	1,  // 13: category.ETLService.Status:output_type -> category.ETLResponse
+	2,  // 14: category.ETLService.GetValidProducts:output_type -> category.FullProductListResponse
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_protos_etl_v1_etl_proto_init() }
@@ -183,7 +700,7 @@ func file_protos_etl_v1_etl_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_etl_v1_etl_proto_rawDesc), len(file_protos_etl_v1_etl_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

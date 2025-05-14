@@ -42,8 +42,9 @@ func (s *CollectorService) Run() {
 
 	products := make(chan domain.FullProduct)
 
-	go s.collectProductDetails(products)
 	go s.storeProductDetails(products)
+	go s.collectProductDetails(products)
+	s.logger.Info("collector service has started")
 }
 
 func (s *CollectorService) Status() int {
@@ -137,7 +138,16 @@ func (s *CollectorService) collectProductDetails(products chan<- domain.FullProd
 
 func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduct) {
 	for product := range products {
-		s.logger.Info("fetched valid product", "product", product)
+		data, err := util.Serialize(product)
+		if err != nil {
+			s.logger.ErrorContext(s.ctx, "error while serializing valid full product", "error", err.Error())
+			continue
+		}
+
+		err = s.cache.Set(s.ctx, util.GenerateCacheKey("stored", product.ProductMain.ID), data)
+		if err != nil {
+			s.logger.ErrorContext(s.ctx, "error while setting to redis", "error", err)
+		}
 	}
 }
 
@@ -167,19 +177,6 @@ func (s *CollectorService) fetchKeysToSlice(keys []string, dst interface{}) erro
 		}
 
 		sliceVal.Set(reflect.Append(sliceVal, itemPtr.Elem()))
-	}
-
-	return nil
-}
-
-func (s *CollectorService) fetchKey(category, key string, dst interface{}) error {
-	data, err := s.getCache(category, key)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(data, &category); err != nil {
-		return err
 	}
 
 	return nil
