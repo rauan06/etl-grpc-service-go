@@ -44,6 +44,7 @@ func (s *CategoryService) Run() {
 
 	s.status = domain.StatusRunning
 
+	s.logger.Info("category service has started")
 	s.SearchCategories(categories)
 
 	s.status = domain.StatusShutdown

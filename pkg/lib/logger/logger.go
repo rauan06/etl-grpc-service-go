@@ -3,9 +3,12 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	stdLog "log"
 	"log/slog"
+	"path/filepath"
+	"runtime"
 )
 
 type PrettyHandlerOptions struct {
@@ -48,7 +51,6 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 
 	r.Attrs(func(a slog.Attr) bool {
 		fields[a.Key] = a.Value.Any()
-
 		return true
 	})
 
@@ -56,9 +58,20 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		fields[a.Key] = a.Value.Any()
 	}
 
+	// 🔍 Get caller info
+	if r.Level != slog.LevelInfo {
+		pc, file, line, ok := runtime.Caller(4) // <- this depth might vary
+		if ok {
+			funcName := runtime.FuncForPC(pc).Name()
+			funcName = filepath.Base(funcName)
+			fileName := filepath.Base(file)
+			fields["caller"] = fileName + ":" + funcName + ":" + fmt.Sprintf("%d", line)
+		}
+	}
+
+	// 🧾 Format JSON fields
 	var b []byte
 	var err error
-
 	if len(fields) > 0 {
 		b, err = json.MarshalIndent(fields, "", "  ")
 		if err != nil {
@@ -72,7 +85,7 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		timeStr,
 		level,
 		msg,
-		"\033[37m"+string(b)+"\033[0m", // White for string(b)
+		"\033[37m"+string(b)+"\033[0m", // White for fields
 	)
 
 	return nil

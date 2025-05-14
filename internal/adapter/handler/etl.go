@@ -62,7 +62,7 @@ func (h *EtlHandler) Stop(ctx context.Context, req *genproto.ETLRequest) (*pb.ET
 func (h *EtlHandler) Status(ctx context.Context, req *genproto.ETLRequest) (*pb.ETLResponse, error) {
 	return &pb.ETLResponse{
 		Code:    "200",
-		Message: "ETL is " + domain.StatusToString(h.status),
+		Message: "ETL " + domain.StatusToString(h.status),
 		Fields: map[string]string{
 			"category_status": domain.StatusToString(h.categorySvc.Status()),
 			"city_status":     domain.StatusToString(h.citySvc.Status()),

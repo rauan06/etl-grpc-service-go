@@ -42,6 +42,8 @@ func (s *StockService) Run() {
 	go s.CollectStocks(stocks)
 
 	s.status = domain.StatusRunning
+
+	s.logger.Info("stock service has started")
 	s.SearchStocks(stocks)
 
 	s.status = domain.StatusShutdown

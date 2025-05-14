@@ -43,6 +43,7 @@ func (s *PriceService) Run() {
 
 	s.status = domain.StatusRunning
 
+	s.logger.Info("price service has started")
 	s.SearchPrices(prices)
 
 	s.status = domain.StatusShutdown

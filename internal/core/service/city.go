@@ -35,12 +35,14 @@ func NewCityService(grpcClient port.CityClient, httpClient port.CityClient, cach
 }
 
 func (s *CityService) Run() {
-	s.status = domain.StatusRunning
-
 	cities := make(chan domain.CityMain)
 	defer close(cities)
 
 	go s.CollectCities(cities)
+
+	s.status = domain.StatusRunning
+
+	s.logger.Info("city service has started")
 	s.SearchCities(cities)
 
 	s.status = domain.StatusShutdown
