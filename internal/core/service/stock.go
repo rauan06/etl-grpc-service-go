@@ -105,11 +105,6 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 
 func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParamsSt) (*domain.StockListRep, error) {
 	resp, err := s.client.ListStocks(ctx, params, []string{}, []string{})
-	if err == nil && len(resp.Results) > 0 {
-		return resp, nil
-	}
-
-	resp, err = s.client.ListStocks(ctx, params, []string{}, []string{})
 	if err != nil {
 		return nil, err
 	}

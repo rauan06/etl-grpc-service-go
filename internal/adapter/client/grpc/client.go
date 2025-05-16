@@ -1,7 +1,5 @@
 package grpc
 
-import "fmt"
-
 type Client struct {
 	Category *CategoryClient
 	City     *CityClient
@@ -11,8 +9,6 @@ type Client struct {
 }
 
 func NewClient(category *CategoryClient, city *CityClient, product *ProductClient, price *PriceClient, stock *StockClient) *Client {
-	fmt.Println(category, city, product, price, stock)
-
 	return &Client{
 		Category: category,
 		City:     city,

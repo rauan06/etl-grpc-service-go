@@ -10,6 +10,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -118,7 +119,6 @@ func (x *ETLResponse) GetFields() map[string]string {
 	return nil
 }
 
-// Response for GetValidProducts
 type FullProductListResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Results        []*FullProduct         `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
@@ -173,9 +173,11 @@ func (x *FullProductListResponse) GetPaginationInfo() *PaginationInfo {
 
 type FullProduct struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductMain   *ProductMain           `protobuf:"bytes,1,opt,name=product_main,json=productMain,proto3" json:"product_main,omitempty"`
-	Price         []*PriceMain           `protobuf:"bytes,2,rep,name=price,proto3" json:"price,omitempty"`
-	Stock         []*StockMain           `protobuf:"bytes,3,rep,name=stock,proto3" json:"stock,omitempty"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	ProductMain   *ProductMain           `protobuf:"bytes,2,opt,name=product_main,json=productMain,proto3" json:"product_main,omitempty"`
+	City          *CityMain              `protobuf:"bytes,3,opt,name=city,proto3" json:"city,omitempty"`
+	Price         *PriceMain             `protobuf:"bytes,4,opt,name=price,proto3" json:"price,omitempty"`
+	Stock         *StockMain             `protobuf:"bytes,5,opt,name=stock,proto3" json:"stock,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -210,6 +212,13 @@ func (*FullProduct) Descriptor() ([]byte, []int) {
 	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{3}
 }
 
+func (x *FullProduct) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
 func (x *FullProduct) GetProductMain() *ProductMain {
 	if x != nil {
 		return x.ProductMain
@@ -217,14 +226,21 @@ func (x *FullProduct) GetProductMain() *ProductMain {
 	return nil
 }
 
-func (x *FullProduct) GetPrice() []*PriceMain {
+func (x *FullProduct) GetCity() *CityMain {
+	if x != nil {
+		return x.City
+	}
+	return nil
+}
+
+func (x *FullProduct) GetPrice() *PriceMain {
 	if x != nil {
 		return x.Price
 	}
 	return nil
 }
 
-func (x *FullProduct) GetStock() []*StockMain {
+func (x *FullProduct) GetStock() *StockMain {
 	if x != nil {
 		return x.Stock
 	}
@@ -233,14 +249,15 @@ func (x *FullProduct) GetStock() []*StockMain {
 
 type ProductMain struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	CreatedAt     string                 `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Deleted       bool                   `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`
-	Id            string                 `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
-	CategoryId    string                 `protobuf:"bytes,7,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
-	Category      *CategoryMain          `protobuf:"bytes,8,opt,name=category,proto3" json:"category,omitempty"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Deleted       bool                   `protobuf:"varint,4,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	Id            string                 `protobuf:"bytes,5,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	CategoryId    string                 `protobuf:"bytes,8,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Category      *CategoryMain          `protobuf:"bytes,9,opt,name=category,proto3" json:"category,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -273,6 +290,13 @@ func (x *ProductMain) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ProductMain.ProtoReflect.Descriptor instead.
 func (*ProductMain) Descriptor() ([]byte, []int) {
 	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ProductMain) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
 }
 
 func (x *ProductMain) GetCreatedAt() string {
@@ -391,6 +415,90 @@ func (x *PriceMain) GetPrice() float64 {
 	return 0
 }
 
+type CityMain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Deleted       bool                   `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	Id            string                 `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	Postcode      string                 `protobuf:"bytes,6,opt,name=postcode,proto3" json:"postcode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CityMain) Reset() {
+	*x = CityMain{}
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CityMain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CityMain) ProtoMessage() {}
+
+func (x *CityMain) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CityMain.ProtoReflect.Descriptor instead.
+func (*CityMain) Descriptor() ([]byte, []int) {
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CityMain) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *CityMain) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *CityMain) GetDeleted() bool {
+	if x != nil {
+		return x.Deleted
+	}
+	return false
+}
+
+func (x *CityMain) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CityMain) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CityMain) GetPostcode() string {
+	if x != nil {
+		return x.Postcode
+	}
+	return ""
+}
+
 type StockMain struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
@@ -402,7 +510,7 @@ type StockMain struct {
 
 func (x *StockMain) Reset() {
 	*x = StockMain{}
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -414,7 +522,7 @@ func (x *StockMain) String() string {
 func (*StockMain) ProtoMessage() {}
 
 func (x *StockMain) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[6]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -427,7 +535,7 @@ func (x *StockMain) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StockMain.ProtoReflect.Descriptor instead.
 func (*StockMain) Descriptor() ([]byte, []int) {
-	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{6}
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *StockMain) GetProductId() string {
@@ -464,7 +572,7 @@ type CategoryMain struct {
 
 func (x *CategoryMain) Reset() {
 	*x = CategoryMain{}
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -476,7 +584,7 @@ func (x *CategoryMain) String() string {
 func (*CategoryMain) ProtoMessage() {}
 
 func (x *CategoryMain) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[7]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -489,7 +597,7 @@ func (x *CategoryMain) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CategoryMain.ProtoReflect.Descriptor instead.
 func (*CategoryMain) Descriptor() ([]byte, []int) {
-	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{7}
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CategoryMain) GetCreatedAt() string {
@@ -537,7 +645,7 @@ type PaginationInfo struct {
 
 func (x *PaginationInfo) Reset() {
 	*x = PaginationInfo{}
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -549,7 +657,7 @@ func (x *PaginationInfo) String() string {
 func (*PaginationInfo) ProtoMessage() {}
 
 func (x *PaginationInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_etl_v1_etl_proto_msgTypes[8]
+	mi := &file_protos_etl_v1_etl_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +670,7 @@ func (x *PaginationInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginationInfo.ProtoReflect.Descriptor instead.
 func (*PaginationInfo) Descriptor() ([]byte, []int) {
-	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{8}
+	return file_protos_etl_v1_etl_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PaginationInfo) GetPage() int64 {
@@ -583,7 +691,7 @@ var File_protos_etl_v1_etl_proto protoreflect.FileDescriptor
 
 const file_protos_etl_v1_etl_proto_rawDesc = "" +
 	"\n" +
-	"\x17protos/etl/v1/etl.proto\x12\bcategory\x1a\x1cgoogle/api/annotations.proto\"\x18\n" +
+	"\x17protos/etl/v1/etl.proto\x12\bcategory\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x18\n" +
 	"\n" +
 	"ETLRequestJ\x04\b\x01\x10\x02J\x04\b\x02\x10\x03\"\xb1\x01\n" +
 	"\vETLResponse\x12\x12\n" +
@@ -595,28 +703,40 @@ const file_protos_etl_v1_etl_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8d\x01\n" +
 	"\x17FullProductListResponse\x12/\n" +
 	"\aresults\x18\x01 \x03(\v2\x15.category.FullProductR\aresults\x12A\n" +
-	"\x0fpagination_info\x18\x02 \x01(\v2\x18.category.PaginationInfoR\x0epaginationInfo\"\x9d\x01\n" +
-	"\vFullProduct\x128\n" +
-	"\fproduct_main\x18\x01 \x01(\v2\x15.category.ProductMainR\vproductMain\x12)\n" +
-	"\x05price\x18\x02 \x03(\v2\x13.category.PriceMainR\x05price\x12)\n" +
-	"\x05stock\x18\x03 \x03(\v2\x13.category.StockMainR\x05stock\"\x80\x02\n" +
-	"\vProductMain\x12\x1d\n" +
+	"\x0fpagination_info\x18\x02 \x01(\v2\x18.category.PaginationInfoR\x0epaginationInfo\"\xd9\x01\n" +
+	"\vFullProduct\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x128\n" +
+	"\fproduct_main\x18\x02 \x01(\v2\x15.category.ProductMainR\vproductMain\x12&\n" +
+	"\x04city\x18\x03 \x01(\v2\x12.category.CityMainR\x04city\x12)\n" +
+	"\x05price\x18\x04 \x01(\v2\x13.category.PriceMainR\x05price\x12)\n" +
+	"\x05stock\x18\x05 \x01(\v2\x13.category.StockMainR\x05stock\"\x94\x02\n" +
+	"\vProductMain\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x01 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\x02 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x02 \x01(\tR\tupdatedAt\x12\x18\n" +
-	"\adeleted\x18\x03 \x01(\bR\adeleted\x12\x0e\n" +
-	"\x02id\x18\x04 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1f\n" +
-	"\vcategory_id\x18\a \x01(\tR\n" +
+	"updated_at\x18\x03 \x01(\tR\tupdatedAt\x12\x18\n" +
+	"\adeleted\x18\x04 \x01(\bR\adeleted\x12\x0e\n" +
+	"\x02id\x18\x05 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x06 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x1f\n" +
+	"\vcategory_id\x18\b \x01(\tR\n" +
 	"categoryId\x122\n" +
-	"\bcategory\x18\b \x01(\v2\x16.category.CategoryMainR\bcategory\"Y\n" +
+	"\bcategory\x18\t \x01(\v2\x16.category.CategoryMainR\bcategory\"Y\n" +
 	"\tPriceMain\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12\x17\n" +
 	"\acity_id\x18\x02 \x01(\tR\x06cityId\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\"Y\n" +
+	"\x05price\x18\x03 \x01(\x01R\x05price\"\xda\x01\n" +
+	"\bCityMain\x129\n" +
+	"\n" +
+	"created_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x18\n" +
+	"\adeleted\x18\x03 \x01(\bR\adeleted\x12\x0e\n" +
+	"\x02id\x18\x04 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12\x1a\n" +
+	"\bpostcode\x18\x06 \x01(\tR\bpostcode\"Y\n" +
 	"\tStockMain\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12\x17\n" +
@@ -653,7 +773,7 @@ func file_protos_etl_v1_etl_proto_rawDescGZIP() []byte {
 	return file_protos_etl_v1_etl_proto_rawDescData
 }
 
-var file_protos_etl_v1_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_protos_etl_v1_etl_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_protos_etl_v1_etl_proto_goTypes = []any{
 	(*ETLRequest)(nil),              // 0: category.ETLRequest
 	(*ETLResponse)(nil),             // 1: category.ETLResponse
@@ -661,32 +781,37 @@ var file_protos_etl_v1_etl_proto_goTypes = []any{
 	(*FullProduct)(nil),             // 3: category.FullProduct
 	(*ProductMain)(nil),             // 4: category.ProductMain
 	(*PriceMain)(nil),               // 5: category.PriceMain
-	(*StockMain)(nil),               // 6: category.StockMain
-	(*CategoryMain)(nil),            // 7: category.CategoryMain
-	(*PaginationInfo)(nil),          // 8: category.PaginationInfo
-	nil,                             // 9: category.ETLResponse.FieldsEntry
+	(*CityMain)(nil),                // 6: category.CityMain
+	(*StockMain)(nil),               // 7: category.StockMain
+	(*CategoryMain)(nil),            // 8: category.CategoryMain
+	(*PaginationInfo)(nil),          // 9: category.PaginationInfo
+	nil,                             // 10: category.ETLResponse.FieldsEntry
+	(*timestamppb.Timestamp)(nil),   // 11: google.protobuf.Timestamp
 }
 var file_protos_etl_v1_etl_proto_depIdxs = []int32{
-	9,  // 0: category.ETLResponse.fields:type_name -> category.ETLResponse.FieldsEntry
+	10, // 0: category.ETLResponse.fields:type_name -> category.ETLResponse.FieldsEntry
 	3,  // 1: category.FullProductListResponse.results:type_name -> category.FullProduct
-	8,  // 2: category.FullProductListResponse.pagination_info:type_name -> category.PaginationInfo
+	9,  // 2: category.FullProductListResponse.pagination_info:type_name -> category.PaginationInfo
 	4,  // 3: category.FullProduct.product_main:type_name -> category.ProductMain
-	5,  // 4: category.FullProduct.price:type_name -> category.PriceMain
-	6,  // 5: category.FullProduct.stock:type_name -> category.StockMain
-	7,  // 6: category.ProductMain.category:type_name -> category.CategoryMain
-	0,  // 7: category.ETLService.Start:input_type -> category.ETLRequest
-	0,  // 8: category.ETLService.Stop:input_type -> category.ETLRequest
-	0,  // 9: category.ETLService.Status:input_type -> category.ETLRequest
-	0,  // 10: category.ETLService.GetValidProducts:input_type -> category.ETLRequest
-	1,  // 11: category.ETLService.Start:output_type -> category.ETLResponse
-	1,  // 12: category.ETLService.Stop:output_type -> category.ETLResponse
-	1,  // 13: category.ETLService.Status:output_type -> category.ETLResponse
-	2,  // 14: category.ETLService.GetValidProducts:output_type -> category.FullProductListResponse
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	6,  // 4: category.FullProduct.city:type_name -> category.CityMain
+	5,  // 5: category.FullProduct.price:type_name -> category.PriceMain
+	7,  // 6: category.FullProduct.stock:type_name -> category.StockMain
+	8,  // 7: category.ProductMain.category:type_name -> category.CategoryMain
+	11, // 8: category.CityMain.created_at:type_name -> google.protobuf.Timestamp
+	11, // 9: category.CityMain.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 10: category.ETLService.Start:input_type -> category.ETLRequest
+	0,  // 11: category.ETLService.Stop:input_type -> category.ETLRequest
+	0,  // 12: category.ETLService.Status:input_type -> category.ETLRequest
+	0,  // 13: category.ETLService.GetValidProducts:input_type -> category.ETLRequest
+	1,  // 14: category.ETLService.Start:output_type -> category.ETLResponse
+	1,  // 15: category.ETLService.Stop:output_type -> category.ETLResponse
+	1,  // 16: category.ETLService.Status:output_type -> category.ETLResponse
+	2,  // 17: category.ETLService.GetValidProducts:output_type -> category.FullProductListResponse
+	14, // [14:18] is the sub-list for method output_type
+	10, // [10:14] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_protos_etl_v1_etl_proto_init() }
@@ -700,7 +825,7 @@ func file_protos_etl_v1_etl_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_etl_v1_etl_proto_rawDesc), len(file_protos_etl_v1_etl_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

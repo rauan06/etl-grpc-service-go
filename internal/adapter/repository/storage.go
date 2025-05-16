@@ -16,11 +16,12 @@ type Repositry struct {
 func NewRepositry() *Repositry {
 	return &Repositry{
 		storage: make(chan domain.MarketPair),
+		results: make(map[string]domain.FullProduct),
 	}
 }
 
-func (s *Repositry) SavePair(domain.MarketPair) {
-
+func (s *Repositry) SavePair(pair domain.MarketPair) {
+	s.storage <- pair
 }
 
 func (s *Repositry) ReadPair() (domain.MarketPair, bool) {

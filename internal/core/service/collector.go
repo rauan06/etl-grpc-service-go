@@ -116,13 +116,22 @@ func (s *CollectorService) collectProductDetails(products chan<- domain.FullProd
 				continue
 			}
 
+			category, err := s.transformIdToCategory(product.CategoryID)
+			if err != nil {
+				s.logger.Warn("failed to get product", "error", err)
+
+				continue
+			}
+
+			product.Category = *category
+
 			// Group models and create new uuid
 			fullProduct := domain.FullProduct{
 				ID:          uuid.NewString(),
-				ProductMain: product,
-				City:        city,
-				Price:       price,
-				Stock:       stock,
+				ProductMain: *product,
+				City:        *city,
+				Price:       *price,
+				Stock:       *stock,
 			}
 
 			if !fullProduct.IsValid() {
@@ -152,6 +161,11 @@ func (s *CollectorService) transformPairToStock(pair domain.MarketPair) (*domain
 func (s *CollectorService) transformPairToProduct(pair domain.MarketPair) (*domain.ProductMain, error) {
 	return s.client.GetProduct(context.Background(), pair.ProductId)
 }
+
 func (s *CollectorService) transformPairToCity(pair domain.MarketPair) (*domain.CityMain, error) {
 	return s.client.GetCity(context.Background(), pair.CityId)
+}
+
+func (s *CollectorService) transformIdToCategory(categoryId string) (*domain.CategoryMain, error) {
+	return s.client.GetCategory(context.Background(), categoryId)
 }

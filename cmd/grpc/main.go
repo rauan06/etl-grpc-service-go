@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	data, err := grpcClient.NewProductClient(context.Background(), "0.0.0.0:5050")
+	data, err := grpcClient.NewStockClient(context.Background(), "0.0.0.0:5051")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(data.ListProducts(context.Background(), domain.ListParamsSt{Page: 1}, []string{}, []string{}, false))
+	fmt.Println(data.ListStocks(context.Background(), domain.ListParamsSt{Page: 2134295561239812903}, []string{}, []string{}))
 }

@@ -1,11 +1,11 @@
 package domain
 
 type FullProduct struct {
-	ID          string       `json:"id"`
-	ProductMain *ProductMain `json:"product_main"`
-	City        *CityMain    `json:"city"`
-	Price       *PriceMain   `json:"price"`
-	Stock       *StockMain   `json:"stock"`
+	ID          string      `json:"id"`
+	ProductMain ProductMain `json:"product_main"`
+	City        CityMain    `json:"city"`
+	Price       PriceMain   `json:"price"`
+	Stock       StockMain   `json:"stock"`
 }
 
 type ProductMain struct {
@@ -25,7 +25,7 @@ type ProductListRep struct {
 }
 
 func (p *FullProduct) IsValid() bool {
-	if p.ID == "" || p.ProductMain == nil || p.City == nil || p.Price == nil || p.Stock == nil {
+	if p.ID == "" {
 		return false
 	}
 

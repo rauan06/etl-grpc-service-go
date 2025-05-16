@@ -15,7 +15,7 @@ type CityListRep struct {
 }
 
 func (c *CityMain) IsValid() bool {
-	if c.CreatedAt == "" || c.Deleted == true || c.UpdatedAt == "" || c.ID == "" || c.Name == "" || c.Postcode == "" {
+	if c.CreatedAt == "" || c.Deleted || c.UpdatedAt == "" || c.ID == "" || c.Name == "" {
 		return false
 	}
 

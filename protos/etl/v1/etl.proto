@@ -5,6 +5,7 @@ package category;
 option go_package = "category/genproto;genproto";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 service ETLService {
   rpc Start(ETLRequest) returns (ETLResponse) {
@@ -44,33 +45,44 @@ message ETLResponse {
   map<string, string> fields = 3;
 }
 
-// Response for GetValidProducts
 message FullProductListResponse {
   repeated FullProduct results = 1;
   PaginationInfo pagination_info = 2;
 }
 
 message FullProduct {
-  ProductMain product_main = 1;
-  repeated PriceMain price = 2;
-  repeated StockMain stock = 3;
+  string uuid = 1;
+  ProductMain product_main = 2;
+  CityMain city = 3;
+  PriceMain price = 4;
+  StockMain stock = 5;
 }
 
 message ProductMain {
-  string created_at = 1;
-  string updated_at = 2;
-  bool deleted = 3;
-  string id = 4;
-  string name = 5;
-  string description = 6;
-  string category_id = 7;
-  CategoryMain category = 8;
+  string uuid = 1;
+  string created_at = 2;
+  string updated_at = 3;
+  bool deleted = 4;
+  string id = 5;
+  string name = 6;
+  string description = 7;
+  string category_id = 8;
+  CategoryMain category = 9;
 }
 
 message PriceMain {
   string product_id = 1;
   string city_id = 2;
   double price = 3;
+}
+
+message CityMain {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  bool deleted = 3;
+  string id = 4;
+  string name = 5;
+  string postcode = 6;
 }
 
 message StockMain {

@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -44,9 +43,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(cfg.Product)
-	fmt.Println(cfg.Price)
-	fmt.Println(cfg.Stock)
+	// fmt.Println(cfg.Product)
+	// fmt.Println(cfg.Price)
+	// fmt.Println(cfg.Stock)
 
 	// Start gRPC server
 	lis, err := net.Listen("tcp", ":5059")
