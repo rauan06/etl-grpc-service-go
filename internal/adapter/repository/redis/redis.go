@@ -2,13 +2,11 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"category/internal/core/port"
-	"category/pkg/config"
-
 	"github.com/go-redis/redis"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
+	"github.com/rauan06/etl-grpc-service-go/pkg/config"
 )
 
 /**
@@ -20,11 +18,11 @@ type Redis struct {
 }
 
 // New creates a new instance of Redis
-func New(ctx context.Context, config *config.Config) (port.CacheRepository, error) {
+func New(ctx context.Context, config *config.Redis) (port.CacheRepository, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     config.RedisURI,
-		Password: config.RedisPassword,
-		DB:       config.RedisDB,
+		Addr:     config.Addr,
+		Password: config.Password,
+		DB:       0,
 	})
 
 	_, err := client.Ping().Result()
@@ -78,29 +76,6 @@ func (r *Redis) DeleteByPrefix(ctx context.Context, prefix string) error {
 	}
 
 	return nil
-}
-
-func (r *Redis) Scan(pattern string) ([]string, error) {
-	var cursor uint64
-	var result = []string{}
-
-	pattern = pattern + "*"
-
-	for {
-		keys, nextCursor, err := r.client.Scan(cursor, pattern, 30).Result()
-		if err != nil {
-			return nil, fmt.Errorf("scan failed: %w", err)
-		}
-
-		result = append(result, keys...)
-
-		cursor = nextCursor
-		if cursor == 0 {
-			break
-		}
-	}
-
-	return result, nil
 }
 
 // Close closes the connection to the redis database

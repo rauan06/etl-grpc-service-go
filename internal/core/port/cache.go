@@ -11,7 +11,6 @@ type CacheRepository interface {
 	Get(ctx context.Context, key string) ([]byte, error)
 
 	// Scans for pattern, return matchde keys
-	Scan(pattern string) ([]string, error)
 	Delete(ctx context.Context, key string) error
 	DeleteByPrefix(ctx context.Context, prefix string) error
 	Close() error

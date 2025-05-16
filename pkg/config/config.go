@@ -1,70 +1,118 @@
 package config
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"fmt"
-	"io"
 	"os"
-	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	DBHost        string `env:"DB_HOST"`
-	DBUser        string `env:"DB_USER"`
-	DBPassword    string `env:"DB_PASSWORD"`
-	DBName        string `env:"DB_NAME"`
-	DBPort        string `env:"DB_PORT"`
-	JWTSecret     string `env:"JWT_SECRET"`
-	RedisURI      string `env:"REDIS_URI"`
-	RedisPassword string `env:"REDIS_PASSWORD"`
-	RedisDB       int    `env:"REDIS_DB"`
-}
+// Container contains environment variables for the application, database, cache, token, and http server
+type (
+	Container struct {
+		Product *Product
+		Price   *Price
+		Stock   *Stock
+		Token   *Token
+		Redis   *Redis
+		DB      *DB
+		HTTP    *HTTP
+	}
+	// App contains all the environment variables for the application
+	Product struct {
+		Name string
+		Env  string
+	}
+	Price struct {
+		Name string
+		Env  string
+	}
+	Stock struct {
+		Name string
+		Env  string
+	}
+	// Token contains all the environment variables for the token service
+	Token struct {
+		Duration string
+	}
+	// Redis contains all the environment variables for the cache service
+	Redis struct {
+		Addr     string
+		Password string
+	}
+	// Database contains all the environment variables for the database
+	DB struct {
+		Connection string
+		Host       string
+		Port       string
+		User       string
+		Password   string
+		Name       string
+	}
+	// HTTP contains all the environment variables for the http server
+	HTTP struct {
+		Env            string
+		URL            string
+		Port           string
+		AllowedOrigins string
+	}
+)
 
-var cfg Config
-
-func LoadConfig() *Config {
-	cfg.DBHost = getEnv("DB_HOST", "localhost")
-	cfg.DBUser = getEnv("DB_USER", "postgres")
-	cfg.DBPassword = getEnv("DB_PASSWORD", "postgres")
-	cfg.DBName = getEnv("DB_NAME", "cafeteria")
-	cfg.DBPort = getEnv("DB_PORT", "5432")
-	cfg.JWTSecret = createMd5Hash(getEnv("JWT_SECRET", "not-so-secret-now-is-it?"))
-	cfg.RedisURI = getEnv("REDIS_URI", "0.0.0.0:6379")
-	cfg.RedisPassword = getEnv("REDIS_PASSWORD", "")
-	cfg.RedisDB, _ = strconv.Atoi(getEnv("REDIS_DB", "0"))
-
-	return &cfg
-}
-
-func GetConfing() *Config {
-	return &cfg
-}
-
-func GetJWTSecret() string {
-	return cfg.JWTSecret
-}
-
-func (c *Config) MakeConnectionString() string {
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName,
-	)
-}
-
-func createMd5Hash(text string) string {
-	hasher := md5.New()
-	_, err := io.WriteString(hasher, text)
-	if err != nil {
-		// panic(err)
+// New creates a new container instance
+func New() (*Container, error) {
+	if os.Getenv("APP_ENV") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
+	product := &Product{
+		Name: os.Getenv("APP_NAME"),
+		Env:  os.Getenv("APP_ENV"),
 	}
-	return fallback
+
+	price := &Price{
+		Name: os.Getenv("APP_NAME"),
+		Env:  os.Getenv("APP_ENV"),
+	}
+
+	stock := &Stock{
+		Name: os.Getenv("APP_NAME"),
+		Env:  os.Getenv("APP_ENV"),
+	}
+
+	token := &Token{
+		Duration: os.Getenv("TOKEN_DURATION"),
+	}
+
+	redis := &Redis{
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
+
+	db := &DB{
+		Connection: os.Getenv("DB_CONNECTION"),
+		Host:       os.Getenv("DB_HOST"),
+		Port:       os.Getenv("DB_PORT"),
+		User:       os.Getenv("DB_USER"),
+		Password:   os.Getenv("DB_PASSWORD"),
+		Name:       os.Getenv("DB_NAME"),
+	}
+
+	http := &HTTP{
+		Env:            os.Getenv("APP_ENV"),
+		URL:            os.Getenv("HTTP_URL"),
+		Port:           os.Getenv("HTTP_PORT"),
+		AllowedOrigins: os.Getenv("HTTP_ALLOWED_ORIGINS"),
+	}
+
+	return &Container{
+		product,
+		price,
+		stock,
+		token,
+		redis,
+		db,
+		http,
+	}, nil
 }

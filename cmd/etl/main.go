@@ -3,52 +3,26 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 
-	client "category/internal/adapter/client/grpc"
-	clientHttp "category/internal/adapter/client/http"
-	"category/internal/adapter/handler"
-	"category/internal/adapter/repository/redis"
-	"category/internal/core/port"
-	"category/internal/core/service"
-	"category/pkg/config"
-	"category/pkg/lib/logger"
-	etlPb "category/protos/etl/v1/pb"
-
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rauan06/etl-grpc-service-go/internal/adapter/client"
+	clientGrpc "github.com/rauan06/etl-grpc-service-go/internal/adapter/client/grpc"
+	clientHttp "github.com/rauan06/etl-grpc-service-go/internal/adapter/client/http"
+	"github.com/rauan06/etl-grpc-service-go/internal/adapter/handler"
+	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository/redis"
+	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository/storage"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/service"
+	"github.com/rauan06/etl-grpc-service-go/pkg/config"
+	"github.com/rauan06/etl-grpc-service-go/pkg/lib/logger"
+	pb "github.com/rauan06/etl-grpc-service-go/protos/etl/v1/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-const (
-	dockerProductAddress = "demo-product"
-	dockerPriceAddress   = "demo-price"
-	dockerStoreAddress   = "demo-store"
-
-	dockerHttpPort  = 8080
-	productHttpPort = 8080
-	storeHttpPort   = 8081
-	priceHttpPort   = 8082
-
-	dockerGrpcPort         = 5050
-	defaultProductGrpcPort = 5050
-	defaultStoreGrpcPort   = 5051
-	defaultPriceGrpcPort   = 5052
-)
-
-var (
-	productGrpcHost string
-	priceGrpcHost   string
-	storeGrpcHost   string
-
-	productGrpcPort int
-	priceGrpcPort   int
-	storeGrpcPort   int
 )
 
 func isRunningInDocker() bool {
@@ -59,72 +33,64 @@ func isRunningInDocker() bool {
 }
 
 func main() {
-	if isRunningInDocker() {
-		log.Println("Running inside Docker")
-		productGrpcHost = dockerProductAddress
-		priceGrpcHost = dockerPriceAddress
-		storeGrpcHost = dockerStoreAddress
-	} else {
-		log.Println("Running outside Docker")
-		productGrpcHost = "0.0.0.0"
-		priceGrpcHost = "0.0.0.0"
-		storeGrpcHost = "0.0.0.0"
-	}
-
-	if isRunningInDocker() {
-		productGrpcPort = dockerGrpcPort
-		priceGrpcPort = dockerGrpcPort
-		storeGrpcPort = dockerGrpcPort
-	} else {
-		productGrpcPort = defaultProductGrpcPort
-		priceGrpcPort = defaultPriceGrpcPort
-		storeGrpcPort = defaultStoreGrpcPort
-	}
-
-	ctx := context.Background()
-	cfg := config.LoadConfig()
+	// Setup logger
 	logger := logger.SetupPrettySlog(os.Stdout)
+
+	// Load env variables
+	cfg, err := config.New()
+	if err != nil {
+		logger.Error("Error loading environment variables", "error", err)
+		os.Exit(1)
+	}
 
 	// Start gRPC server
 	lis, err := net.Listen("tcp", ":5059")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Error("Error loading environment variables", "error", err)
+		os.Exit(1)
 	}
 	grpcServer := grpc.NewServer()
 
-	// gRPC Clients
-	grpcCategoryClient, _ := client.NewCategoryClient(ctx, fmt.Sprintf("%s:%d", priceGrpcHost, productGrpcPort))
-	grpcCityClient, _ := client.NewCityClient(ctx, fmt.Sprintf("%s:%d", productGrpcHost, productGrpcPort))
-	grpcPriceClient, _ := client.NewPriceClient(ctx, fmt.Sprintf("%s:%d", priceGrpcHost, priceGrpcPort))
-	grpcStockClient, _ := client.NewStockClient(ctx, fmt.Sprintf("%s:%d", storeGrpcHost, storeGrpcPort))
-	grpcProductClient, _ := client.NewProductClient(ctx, fmt.Sprintf("%s:%d", productGrpcHost, productGrpcPort))
+	// Client (presentation layer)
+	ctx := context.Background()
 
-	// HTTP Clients
-	productURL, _ := url.Parse(fmt.Sprintf("http://0.0.0.0:%d", productHttpPort))
-	storeURL, _ := url.Parse(fmt.Sprintf("http://0.0.0.0:%d", storeHttpPort))
-	priceURL, _ := url.Parse(fmt.Sprintf("http://0.0.0.0:%d", priceHttpPort))
+	// gRPC Client
+	grpcCategoryClient, _ := clientGrpc.NewCategoryClient(ctx, cfg.Product.Env)
+	grpcProductClient, _ := clientGrpc.NewProductClient(ctx, cfg.Product.Env)
+	grpcCityClient, _ := clientGrpc.NewCityClient(ctx, cfg.Product.Env)
+	grpcPriceClient, _ := clientGrpc.NewPriceClient(ctx, cfg.Price.Env)
+	grpcStockClient, _ := clientGrpc.NewStockClient(ctx, cfg.Stock.Env)
+	grpcClient := clientGrpc.NewClient(grpcCategoryClient, grpcCityClient, grpcProductClient, grpcPriceClient, grpcStockClient)
+
+	// HTTP Client
+	productURL, _ := url.Parse(cfg.Product.Env)
+	storeURL, _ := url.Parse(cfg.Stock.Env)
+	priceURL, _ := url.Parse(cfg.Price.Env)
 
 	categoryHttpClient := clientHttp.NewCategoryClient(productURL)
 	cityHttpClient := clientHttp.NewCityClient(productURL)
 	priceHttpClient := clientHttp.NewPriceClient(priceURL)
 	stockHttpClient := clientHttp.NewStockClient(storeURL)
 	productHttpClient := clientHttp.NewProductClient(productURL)
+	httpClient := clientHttp.NewClient(categoryHttpClient, cityHttpClient, productHttpClient, priceHttpClient, stockHttpClient)
 
+	client := client.NewClient(grpcClient, httpClient, logger)
+
+	// Repository layer
 	// Cache (Redis)
-	cache, err := redis.New(ctx, cfg)
+	cache, err := redis.New(ctx, cfg.Redis)
 	if err != nil {
 		log.Fatalf("Failed to initialize Redis: %v", err)
 	}
 
-	// Service Layer
-	categorySvc := service.NewCategoryService(grpcCategoryClient, categoryHttpClient, cache, logger)
-	citySvc := service.NewCityService(grpcCityClient, cityHttpClient, cache, logger)
-	priceSvc := service.NewPriceService(grpcPriceClient, priceHttpClient, cache, logger)
-	stockSvc := service.NewStockService(grpcStockClient, stockHttpClient, cache, logger)
-	productSvc := service.NewProductService(grpcProductClient, productHttpClient, cache, logger)
-	collectorSvc := service.NewCollectorService(cache, logger)
+	// Storage
+	repo := storage.NewStorage()
 
-	svcs := []port.Service{&categorySvc, &citySvc, &priceSvc, &stockSvc, &productSvc, &collectorSvc}
+	// Service Layer
+	stockSvc := service.NewStockService(client, repo, logger)
+	collectorSvc := service.NewCollectorService(client, repo, logger)
+
+	svcs := []port.Service{&stockSvc, &collectorSvc}
 
 	// Handler
 	h := handler.NewEtlHandler(
@@ -134,13 +100,13 @@ func main() {
 	)
 
 	// Register gRPC handler
-	etlPb.RegisterETLServiceServer(grpcServer, h)
+	pb.RegisterETLServiceServer(grpcServer, h)
 
 	// Register HTTP Gateway
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	if err := etlPb.RegisterETLServiceHandlerFromEndpoint(ctx, mux, "localhost:5059", opts); err != nil {
+	if err := pb.RegisterETLServiceHandlerFromEndpoint(ctx, mux, "localhost:5059", opts); err != nil {
 		log.Fatalf("failed to register gateway: %v", err)
 	}
 

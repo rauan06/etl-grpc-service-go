@@ -1,12 +1,13 @@
 package http
 
 import (
-	"category/internal/core/domain"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 )
 
 const (

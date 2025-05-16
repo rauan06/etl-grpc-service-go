@@ -1,12 +1,14 @@
 package handler
 
 import (
-	"category/internal/core/domain"
-	"category/internal/core/port"
-	pb "category/protos/etl/v1/pb"
 	"context"
 	"encoding/json"
 	"log/slog"
+
+	pb "github.com/rauan06/etl-grpc-service-go/protos/etl/v1/pb"
+
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
 )
 
 type EtlHandler struct {
@@ -77,7 +79,7 @@ func (h *EtlHandler) GetValidProducts(ctx context.Context, req *pb.ETLRequest) (
 		return nil, err
 	}
 
-	// h.logger.InfoContext(ctx, "redis keys found", "count", len(keys))
+	h.logger.InfoContext(ctx, "redis keys found", "count", len(keys), "keys", keys)
 
 	var res = []*domain.FullProduct{}
 	for _, key := range keys {

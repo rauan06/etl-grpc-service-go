@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 
-	"category/internal/core/domain"
-	pb "category/protos/product/v1/pb"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	pb "github.com/rauan06/etl-grpc-service-go/protos/product/v1/pb"
 
 	"google.golang.org/grpc"
 )

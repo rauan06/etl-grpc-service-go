@@ -1,19 +1,22 @@
 package service
 
 import (
-	"category/internal/core/domain"
-	"category/internal/core/port"
-	"category/internal/core/util"
 	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"reflect"
 	"time"
+
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/util"
 )
 
 type CollectorService struct {
-	cache  port.CacheRepository
+	client port.CLientI
+	repo   port.Repository
+
 	logger *slog.Logger
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -21,11 +24,12 @@ type CollectorService struct {
 	status int
 }
 
-func NewCollectorService(cache port.CacheRepository, logger *slog.Logger) CollectorService {
+func NewCollectorService(client port.CLientI, repo port.Repository, logger *slog.Logger) CollectorService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return CollectorService{
-		cache:  cache,
+		client: client,
+		repo:   repo,
 		logger: logger,
 		ctx:    ctx,
 		cancel: cancel,
@@ -77,30 +81,17 @@ func (s *CollectorService) collectProductDetails(products chan<- domain.FullProd
 		case <-s.ctx.Done():
 			return
 		default:
-			productKeys, err := s.cache.Scan("product")
-			if err != nil {
-				s.logger.Error("error scanning prefix on redis", "error", err.Error())
-				return
+			marketPair, ok := s.repo.ReadPair()
+			if !ok {
+				// Retry if repo is empty or closed
+				s.logger.Info("didn't recieve pir from storage, retrying...")
+				time.Sleep(time.Second)
+				continue
 			}
 
-			priceKeys, err := s.cache.Scan("price")
-			if err != nil {
-				s.logger.Error("error scanning prefix on redis", "error", err.Error())
-				return
-			}
-
-			stockKeys, err := s.cache.Scan("stock")
-			if err != nil {
-				s.logger.Error("error scanning prefix on redis", "error", err.Error())
-				return
-			}
-
-			var productList []domain.ProductMain
-			var priceList []domain.PriceMain
-			var stockList []domain.StockMain
-			s.fetchKeysToSlice(productKeys, &productList)
-			s.fetchKeysToSlice(priceKeys, &priceList)
-			s.fetchKeysToSlice(stockKeys, &stockList)
+			// Fetch stock and price first
+			stock := s.transformPairToStock(marketPair)
+			price := s.transformPairToPrice(marketPair)
 
 			if len(productList) == 0 {
 				time.Sleep(3 * time.Second)
@@ -161,7 +152,7 @@ func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduc
 			s.logger.ErrorContext(s.ctx, "error while setting to redis", "error", err)
 		}
 
-		s.logger.InfoContext(s.ctx, "stored full product")
+		// s.logger.InfoContext(s.ctx, "stored full product", "product", product, "key", "stored:"+product.ProductMain.ID)
 	}
 }
 
@@ -170,7 +161,7 @@ func (s *CollectorService) getCache(serviceName, id string) ([]byte, error) {
 	return s.cache.Get(s.ctx, key)
 }
 
-func (s *CollectorService) fetchKeysToSlice(keys []string, dst interface{}) error {
+func (s *CollectorService) transformPairToPrice(pair domain.MarketPair) domain.PriceMain {
 	dstVal := reflect.ValueOf(dst)
 	if dstVal.Kind() != reflect.Ptr || dstVal.Elem().Kind() != reflect.Slice {
 		return errors.New("dst must be a pointer to a slice")
@@ -194,4 +185,7 @@ func (s *CollectorService) fetchKeysToSlice(keys []string, dst interface{}) erro
 	}
 
 	return nil
+}
+
+func (s *CollectorService) transformPairToStock(pair domain.MarketPair) domain.StockMain {
 }

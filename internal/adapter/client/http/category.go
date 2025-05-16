@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"category/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 )
 
 const (

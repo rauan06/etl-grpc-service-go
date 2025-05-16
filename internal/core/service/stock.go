@@ -1,18 +1,18 @@
 package service
 
 import (
-	"category/internal/core/domain"
-	"category/internal/core/port"
-	"category/internal/core/util"
 	"context"
+	"errors"
 	"log/slog"
 	"time"
+
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
 )
 
 type StockService struct {
-	grpcClient port.StockClient
-	httpClient port.StockClient
-	cache      port.CacheRepository
+	client port.CLientI
+	repo   port.Repository
 
 	logger *slog.Logger
 	ctx    context.Context
@@ -21,17 +21,16 @@ type StockService struct {
 	status int
 }
 
-func NewStockService(grpcClient port.StockClient, httpClient port.StockClient, cache port.CacheRepository, logger *slog.Logger) StockService {
+func NewStockService(client port.CLientI, repo port.Repository, logger *slog.Logger) StockService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return StockService{
-		grpcClient: grpcClient,
-		httpClient: httpClient,
-		cache:      cache,
-		logger:     logger,
-		ctx:        ctx,
-		cancel:     cancel,
-		status:     domain.StatusNotStarted,
+		client: client,
+		repo:   repo,
+		logger: logger,
+		ctx:    ctx,
+		cancel: cancel,
+		status: domain.StatusNotStarted,
 	}
 }
 
@@ -105,12 +104,12 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 }
 
 func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParamsSt) (*domain.StockListRep, error) {
-	resp, err := s.grpcClient.ListStocks(ctx, params, []string{}, []string{})
+	resp, err := s.client.ListStocks(ctx, params, []string{}, []string{})
 	if err == nil && len(resp.Results) > 0 {
 		return resp, nil
 	}
 
-	resp, err = s.httpClient.ListStocks(ctx, params, []string{}, []string{})
+	resp, err = s.client.ListStocks(ctx, params, []string{}, []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -120,18 +119,21 @@ func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParams
 
 func (s *StockService) CollectStocks(stocks <-chan domain.StockMain) {
 	for stock := range stocks {
-		if err := s.cacheStock(stock); err != nil {
-			s.logger.ErrorContext(s.ctx, "error caching stock", "stockID", stock.CityId, "error", err.Error())
+		if err := s.saveStock(stock); err != nil {
+			s.logger.InfoContext(s.ctx, "error caching stock", "stockID", stock.CityId, "error", err.Error())
 		}
 	}
 }
 
-func (s *StockService) cacheStock(stock domain.StockMain) error {
-	data, err := util.Serialize(stock)
-	if err != nil {
-		return err
+func (s *StockService) saveStock(stock domain.StockMain) error {
+	if !stock.IsValid() {
+		return errors.New("recieved invalid stock")
 	}
 
-	key := util.GenerateCacheKey("stock", stock.CityId)
-	return s.cache.Set(s.ctx, key, data)
+	s.repo.SavePair(domain.MarketPair{
+		ProductId: stock.ProductId,
+		CityId:    stock.CityId,
+	})
+
+	return nil
 }
