@@ -45,6 +45,9 @@ func (c *PriceClient) ListPrices(ctx context.Context, params domain.ListParamsSt
 
 	var results []domain.PriceMain
 	for _, prod := range resp.Results {
+		if prod == nil {
+			continue
+		}
 		results = append(results, domain.PriceMain{
 			ProductId: prod.ProductId,
 			CityId:    prod.CityId,
@@ -52,12 +55,15 @@ func (c *PriceClient) ListPrices(ctx context.Context, params domain.ListParamsSt
 		})
 	}
 
+	pagination := domain.PaginationInfoSt{}
+	if resp.PaginationInfo != nil {
+		pagination.Page = resp.PaginationInfo.Page
+		pagination.PageSize = resp.PaginationInfo.PageSize
+	}
+
 	return &domain.PriceListRep{
-		PaginationInfo: domain.PaginationInfoSt{
-			Page:     resp.PaginationInfo.Page,
-			PageSize: resp.PaginationInfo.PageSize,
-		},
-		Results: results,
+		PaginationInfo: pagination,
+		Results:        results,
 	}, nil
 }
 
@@ -68,6 +74,10 @@ func (c *PriceClient) GetPrice(ctx context.Context, productId, cityId string) (*
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil // or fmt.Errorf("price not found for product %s in city %s", productId, cityId)
 	}
 
 	return &domain.PriceMain{

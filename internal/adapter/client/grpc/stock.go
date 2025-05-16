@@ -45,6 +45,9 @@ func (c *StockClient) ListStocks(ctx context.Context, params domain.ListParamsSt
 
 	var results []domain.StockMain
 	for _, prod := range resp.Results {
+		if prod == nil {
+			continue
+		}
 		results = append(results, domain.StockMain{
 			ProductId: prod.ProductId,
 			CityId:    prod.CityId,
@@ -52,12 +55,15 @@ func (c *StockClient) ListStocks(ctx context.Context, params domain.ListParamsSt
 		})
 	}
 
+	pagination := domain.PaginationInfoSt{}
+	if resp.PaginationInfo != nil {
+		pagination.Page = resp.PaginationInfo.Page
+		pagination.PageSize = resp.PaginationInfo.PageSize
+	}
+
 	return &domain.StockListRep{
-		PaginationInfo: domain.PaginationInfoSt{
-			Page:     resp.PaginationInfo.Page,
-			PageSize: resp.PaginationInfo.PageSize,
-		},
-		Results: results,
+		PaginationInfo: pagination,
+		Results:        results,
 	}, nil
 }
 
@@ -68,6 +74,10 @@ func (c *StockClient) GetStock(ctx context.Context, productId, cityId string) (*
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil
 	}
 
 	return &domain.StockMain{

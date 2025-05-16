@@ -42,8 +42,15 @@ func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 		return nil, err
 	}
 
+	if resp == nil {
+		return nil, nil
+	}
+
 	var results []domain.CategoryMain
 	for _, cat := range resp.Results {
+		if cat == nil {
+			continue
+		}
 		results = append(results, domain.CategoryMain{
 			UpdatedAt: cat.UpdatedAt.String(),
 			CreatedAt: cat.CreatedAt.String(),
@@ -53,12 +60,15 @@ func (c *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 		})
 	}
 
+	pagination := domain.PaginationInfoSt{}
+	if resp.PaginationInfo != nil {
+		pagination.Page = resp.PaginationInfo.Page
+		pagination.PageSize = resp.PaginationInfo.PageSize
+	}
+
 	return &domain.CategoryListRep{
-		PaginationInfo: domain.PaginationInfoSt{
-			Page:     resp.PaginationInfo.Page,
-			PageSize: resp.PaginationInfo.PageSize,
-		},
-		Results: results,
+		PaginationInfo: pagination,
+		Results:        results,
 	}, nil
 }
 
@@ -66,6 +76,10 @@ func (c *CategoryClient) GetCategory(ctx context.Context, id string) (*domain.Ca
 	resp, err := c.service.Get(ctx, &pb.CategoryGetReq{Id: id})
 	if err != nil {
 		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil
 	}
 
 	return &domain.CategoryMain{
