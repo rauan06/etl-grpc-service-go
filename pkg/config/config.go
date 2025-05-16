@@ -6,54 +6,28 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Container contains environment variables for the application, database, cache, token, and http server
+// Container contains environment variables for the application
 type (
 	Container struct {
 		Product *Product
 		Price   *Price
 		Stock   *Stock
-		Token   *Token
-		Redis   *Redis
-		DB      *DB
-		HTTP    *HTTP
 	}
-	// App contains all the environment variables for the application
+	// Environment variables for the application
 	Product struct {
-		Name string
-		Env  string
+		URL      string
+		PortHttp string
+		PortGrpc string
 	}
 	Price struct {
-		Name string
-		Env  string
+		URL      string
+		PortHttp string
+		PortGrpc string
 	}
 	Stock struct {
-		Name string
-		Env  string
-	}
-	// Token contains all the environment variables for the token service
-	Token struct {
-		Duration string
-	}
-	// Redis contains all the environment variables for the cache service
-	Redis struct {
-		Addr     string
-		Password string
-	}
-	// Database contains all the environment variables for the database
-	DB struct {
-		Connection string
-		Host       string
-		Port       string
-		User       string
-		Password   string
-		Name       string
-	}
-	// HTTP contains all the environment variables for the http server
-	HTTP struct {
-		Env            string
-		URL            string
-		Port           string
-		AllowedOrigins string
+		URL      string
+		PortHttp string
+		PortGrpc string
 	}
 )
 
@@ -67,52 +41,26 @@ func New() (*Container, error) {
 	}
 
 	product := &Product{
-		Name: os.Getenv("APP_NAME"),
-		Env:  os.Getenv("APP_ENV"),
+		URL:      os.Getenv("PRODUCT_URL"),
+		PortHttp: os.Getenv("PRODUCT_PORT_HTTP"),
+		PortGrpc: os.Getenv("PRODUCT_PORT_GRPC"),
 	}
 
 	price := &Price{
-		Name: os.Getenv("APP_NAME"),
-		Env:  os.Getenv("APP_ENV"),
+		URL:      os.Getenv("PRICE_URL"),
+		PortHttp: os.Getenv("PRICE_PORT_HTTP"),
+		PortGrpc: os.Getenv("PRICE_PORT_GRPC"),
 	}
 
 	stock := &Stock{
-		Name: os.Getenv("APP_NAME"),
-		Env:  os.Getenv("APP_ENV"),
-	}
-
-	token := &Token{
-		Duration: os.Getenv("TOKEN_DURATION"),
-	}
-
-	redis := &Redis{
-		Addr:     os.Getenv("REDIS_ADDR"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-	}
-
-	db := &DB{
-		Connection: os.Getenv("DB_CONNECTION"),
-		Host:       os.Getenv("DB_HOST"),
-		Port:       os.Getenv("DB_PORT"),
-		User:       os.Getenv("DB_USER"),
-		Password:   os.Getenv("DB_PASSWORD"),
-		Name:       os.Getenv("DB_NAME"),
-	}
-
-	http := &HTTP{
-		Env:            os.Getenv("APP_ENV"),
-		URL:            os.Getenv("HTTP_URL"),
-		Port:           os.Getenv("HTTP_PORT"),
-		AllowedOrigins: os.Getenv("HTTP_ALLOWED_ORIGINS"),
+		URL:      os.Getenv("STOCK_URL"),
+		PortHttp: os.Getenv("STOCK_PORT_HTTP"),
+		PortGrpc: os.Getenv("STOCK_PORT_GRPC"),
 	}
 
 	return &Container{
 		product,
 		price,
 		stock,
-		token,
-		redis,
-		db,
-		http,
 	}, nil
 }

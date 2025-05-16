@@ -50,6 +50,13 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 	fields := make(map[string]interface{}, r.NumAttrs())
 
 	r.Attrs(func(a slog.Attr) bool {
+		// Special handling for error values
+		if a.Key == "err" || a.Key == "error" {
+			if err, ok := a.Value.Any().(error); ok {
+				fields[a.Key] = err.Error()
+				return true
+			}
+		}
 		fields[a.Key] = a.Value.Any()
 		return true
 	})
@@ -58,9 +65,8 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		fields[a.Key] = a.Value.Any()
 	}
 
-	// 🔍 Get caller info
 	if r.Level != slog.LevelInfo {
-		pc, file, line, ok := runtime.Caller(4) // <- this depth might vary
+		pc, file, line, ok := runtime.Caller(4)
 		if ok {
 			funcName := runtime.FuncForPC(pc).Name()
 			funcName = filepath.Base(funcName)
@@ -69,7 +75,6 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		}
 	}
 
-	// 🧾 Format JSON fields
 	var b []byte
 	var err error
 	if len(fields) > 0 {

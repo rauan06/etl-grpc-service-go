@@ -2,15 +2,12 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"log/slog"
-	"reflect"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
-	"github.com/rauan06/etl-grpc-service-go/internal/core/util"
 )
 
 type CollectorService struct {
@@ -89,103 +86,72 @@ func (s *CollectorService) collectProductDetails(products chan<- domain.FullProd
 				continue
 			}
 
-			// Fetch stock and price first
-			stock := s.transformPairToStock(marketPair)
-			price := s.transformPairToPrice(marketPair)
+			// Fetch models using our piared ids
+			stock, err := s.transformPairToStock(marketPair)
+			if err != nil {
+				s.logger.Warn("failed to get stock", "error", err)
 
-			if len(productList) == 0 {
-				time.Sleep(3 * time.Second)
+				// Continue means skipping this pair of ids
 				continue
 			}
 
-			// Group prices and stocks by product ID
-			productIDToPrices := make(map[string][]domain.PriceMain)
-			for _, price := range priceList {
-				if price.IsValid() {
-					productIDToPrices[price.ProductId] = append(productIDToPrices[price.ProductId], price)
-				}
+			price, err := s.transformPairToPrice(marketPair)
+			if err != nil {
+				s.logger.Warn("failed to get price", "error", err)
+
+				continue
 			}
 
-			productIDToStocks := make(map[string][]domain.StockMain)
-			for _, stock := range stockList {
-				if stock.IsValid() {
-					productIDToStocks[stock.ProductId] = append(productIDToStocks[stock.ProductId], stock)
-				}
+			city, err := s.transformPairToCity(marketPair)
+			if err != nil {
+				s.logger.Warn("failed to get city", "error", err)
+
+				continue
 			}
 
-			var fullProds []domain.FullProduct
-			for _, prod := range productList {
-				fullProd := domain.FullProduct{
-					ProductMain: prod,
-					Prices:      productIDToPrices[prod.ID],
-					Stocks:      productIDToStocks[prod.ID],
-				}
+			product, err := s.transformPairToProduct(marketPair)
+			if err != nil {
+				s.logger.Warn("failed to get product", "error", err)
 
-				if !fullProd.IsValid() {
-					continue
-				}
-
-				fullProds = append(fullProds, fullProd)
+				continue
 			}
 
-			for _, prod := range fullProds {
-				select {
-				case products <- prod:
-				case <-s.ctx.Done():
-					return
-				}
+			// Group models and create new uuid
+			fullProduct := domain.FullProduct{
+				ID:          uuid.NewString(),
+				ProductMain: product,
+				City:        city,
+				Price:       price,
+				Stock:       stock,
 			}
+
+			if !fullProduct.IsValid() {
+				s.logger.Warn("recieved invalid full product", "product", fullProduct)
+				continue
+			}
+
+			products <- fullProduct
 		}
 	}
 }
 
 func (s *CollectorService) storeProductDetails(products <-chan domain.FullProduct) {
 	for product := range products {
-		data, err := util.Serialize(product)
-		if err != nil {
-			s.logger.ErrorContext(s.ctx, "error while serializing valid full product", "error", err.Error())
-			continue
-		}
-
-		err = s.cache.Set(s.ctx, util.GenerateCacheKey("stored", product.ProductMain.ID), data)
-		if err != nil {
-			s.logger.ErrorContext(s.ctx, "error while setting to redis", "error", err)
-		}
-
-		// s.logger.InfoContext(s.ctx, "stored full product", "product", product, "key", "stored:"+product.ProductMain.ID)
+		s.repo.SaveResult(product.ID, product)
 	}
 }
 
-func (s *CollectorService) getCache(serviceName, id string) ([]byte, error) {
-	key := util.GenerateCacheKey(serviceName, id)
-	return s.cache.Get(s.ctx, key)
+func (s *CollectorService) transformPairToPrice(pair domain.MarketPair) (*domain.PriceMain, error) {
+	return s.client.GetPrice(context.Background(), pair.ProductId, pair.CityId)
 }
 
-func (s *CollectorService) transformPairToPrice(pair domain.MarketPair) domain.PriceMain {
-	dstVal := reflect.ValueOf(dst)
-	if dstVal.Kind() != reflect.Ptr || dstVal.Elem().Kind() != reflect.Slice {
-		return errors.New("dst must be a pointer to a slice")
-	}
-
-	sliceVal := dstVal.Elem()
-	elemType := sliceVal.Type().Elem() // type of individual item
-
-	for _, key := range keys {
-		data, err := s.cache.Get(s.ctx, key)
-		if err != nil {
-			continue
-		}
-
-		itemPtr := reflect.New(elemType) // create pointer to T
-		if err := json.Unmarshal(data, itemPtr.Interface()); err != nil {
-			continue
-		}
-
-		sliceVal.Set(reflect.Append(sliceVal, itemPtr.Elem()))
-	}
-
-	return nil
+func (s *CollectorService) transformPairToStock(pair domain.MarketPair) (*domain.StockMain, error) {
+	return s.client.GetStock(context.Background(), pair.ProductId, pair.CityId)
 }
 
-func (s *CollectorService) transformPairToStock(pair domain.MarketPair) domain.StockMain {
+func (s *CollectorService) transformPairToProduct(pair domain.MarketPair) (*domain.ProductMain, error) {
+	return s.client.GetProduct(context.Background(), pair.ProductId)
+}
+func (s *CollectorService) transformPairToCity(pair domain.MarketPair) (*domain.CityMain, error) {
+	return s.client.GetCity(context.Background(), pair.CityId)
 }

@@ -98,25 +98,24 @@ services:
     networks:
       - etl-network
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - etl-network
-
   # etl-service:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
   #   container_name: etl-service
   #   environment:
-  #     REDIS_URI: redis:6379
+  #     PRODUCT_URL: demo-product
+  #     PRODUCT_PORT_HTTP: 8080
+  #     PRODUCT_PORT_GRPC: 5050
+  #     PRICE_URL: demo-price
+  #     PRICE_PORT_HTTP: 8080
+  #     PRICE_PORT_GRPC: 5050
+  #     STOCK_URL: demo-store
+  #     STOCK_PORT_HTTP: 8080
+  #     STOCK_PORT_GRPC: 5050
   #   ports:
   #     - "8099:8099"
   #   depends_on:
-  #     - redis
   #     - demo-price
   #     - demo-store
   #     - demo-product

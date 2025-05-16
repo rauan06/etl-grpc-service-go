@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -14,8 +15,8 @@ import (
 	clientGrpc "github.com/rauan06/etl-grpc-service-go/internal/adapter/client/grpc"
 	clientHttp "github.com/rauan06/etl-grpc-service-go/internal/adapter/client/http"
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/handler"
-	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository/redis"
-	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository/storage"
+	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/service"
 	"github.com/rauan06/etl-grpc-service-go/pkg/config"
@@ -43,6 +44,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println(cfg.Product)
+	fmt.Println(cfg.Price)
+	fmt.Println(cfg.Stock)
+
 	// Start gRPC server
 	lis, err := net.Listen("tcp", ":5059")
 	if err != nil {
@@ -55,17 +60,32 @@ func main() {
 	ctx := context.Background()
 
 	// gRPC Client
-	grpcCategoryClient, _ := clientGrpc.NewCategoryClient(ctx, cfg.Product.Env)
-	grpcProductClient, _ := clientGrpc.NewProductClient(ctx, cfg.Product.Env)
-	grpcCityClient, _ := clientGrpc.NewCityClient(ctx, cfg.Product.Env)
-	grpcPriceClient, _ := clientGrpc.NewPriceClient(ctx, cfg.Price.Env)
-	grpcStockClient, _ := clientGrpc.NewStockClient(ctx, cfg.Stock.Env)
+	grpcCategoryClient, _ := clientGrpc.NewCategoryClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
+	grpcProductClient, _ := clientGrpc.NewProductClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
+	grpcCityClient, _ := clientGrpc.NewCityClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
+	grpcPriceClient, _ := clientGrpc.NewPriceClient(ctx, cfg.Price.URL+":"+cfg.Price.PortGrpc)
+	grpcStockClient, _ := clientGrpc.NewStockClient(ctx, cfg.Stock.URL+":"+cfg.Stock.PortGrpc)
 	grpcClient := clientGrpc.NewClient(grpcCategoryClient, grpcCityClient, grpcProductClient, grpcPriceClient, grpcStockClient)
 
-	// HTTP Client
-	productURL, _ := url.Parse(cfg.Product.Env)
-	storeURL, _ := url.Parse(cfg.Stock.Env)
-	priceURL, _ := url.Parse(cfg.Price.Env)
+	// HTTP client
+	// Parse URLs for HTTP
+	productURL, err := url.Parse("http://" + cfg.Product.URL + ":" + cfg.Price.PortHttp)
+	if err != nil {
+		logger.Error("Error parsing url", "error", err, "url", cfg.Product.URL+":"+cfg.Price.PortHttp)
+		os.Exit(1)
+	}
+
+	storeURL, err := url.Parse("http://" + cfg.Stock.URL + ":" + cfg.Product.PortHttp)
+	if err != nil {
+		logger.Error("Error parsing url", "error", err, "url", cfg.Stock.URL+":"+cfg.Product.PortHttp)
+		os.Exit(1)
+	}
+
+	priceURL, err := url.Parse("http://" + cfg.Price.URL + ":" + cfg.Product.PortHttp)
+	if err != nil {
+		logger.Error("Error parsing url", "error", err, "url", cfg.Price.URL+":"+cfg.Product.PortHttp)
+		os.Exit(1)
+	}
 
 	categoryHttpClient := clientHttp.NewCategoryClient(productURL)
 	cityHttpClient := clientHttp.NewCityClient(productURL)
@@ -75,16 +95,14 @@ func main() {
 	httpClient := clientHttp.NewClient(categoryHttpClient, cityHttpClient, productHttpClient, priceHttpClient, stockHttpClient)
 
 	client := client.NewClient(grpcClient, httpClient, logger)
-
-	// Repository layer
-	// Cache (Redis)
-	cache, err := redis.New(ctx, cfg.Redis)
-	if err != nil {
-		log.Fatalf("Failed to initialize Redis: %v", err)
+	if err := CheckConnetion(client); err != nil {
+		logger.Error("Error checking connection", "error", err)
+		os.Exit(1)
 	}
 
+	// Repository layer
 	// Storage
-	repo := storage.NewStorage()
+	repo := repository.NewRepositry()
 
 	// Service Layer
 	stockSvc := service.NewStockService(client, repo, logger)
@@ -94,7 +112,7 @@ func main() {
 
 	// Handler
 	h := handler.NewEtlHandler(
-		cache,
+		repo,
 		logger,
 		svcs...,
 	)
@@ -123,4 +141,36 @@ func main() {
 	if err := http.ListenAndServe(":8099", mux); err != nil {
 		log.Fatalf("failed to start HTTP server: %v", err)
 	}
+}
+
+// Pings every enpoint
+func CheckConnetion(client port.CLientI) error {
+	ctx := context.Background()
+
+	_, err := client.ListCategories(ctx, domain.ListParamsSt{}, []string{})
+	if err != nil {
+		return err
+	}
+
+	_, err = client.ListProducts(ctx, domain.ListParamsSt{}, []string{}, []string{}, false)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.ListCities(ctx, domain.ListParamsSt{}, []string{})
+	if err != nil {
+		return err
+	}
+
+	_, err = client.ListPrices(ctx, domain.ListParamsSt{}, []string{}, []string{})
+	if err != nil {
+		return err
+	}
+
+	_, err = client.ListStocks(ctx, domain.ListParamsSt{}, []string{}, []string{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

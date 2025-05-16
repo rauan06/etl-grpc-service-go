@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/client/grpc"
@@ -25,6 +27,46 @@ func NewClient(
 		HTTP:   http,
 		logger: logger,
 	}
+}
+
+func (c *Client) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
+	// Validate context
+	if ctx == nil {
+		return nil, errors.New("nil context")
+	}
+
+	// Initialize empty slices if nil
+	if ids == nil {
+		ids = []string{}
+	}
+	if categoryIDs == nil {
+		categoryIDs = []string{}
+	}
+
+	var resp *domain.ProductListRep
+	var err error
+
+	// Try GRPC if available
+	if c.GRPC != nil && c.GRPC.Product != nil {
+		resp, err = c.GRPC.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
+		if err == nil {
+			return resp, nil
+		}
+		c.logger.Warn("GRPC ListProducts failed", "error", err)
+	} else {
+		c.logger.Warn("GRPC client not available")
+	}
+
+	// Fallback to HTTP if available
+	if c.HTTP != nil && c.HTTP.Product != nil {
+		resp, err = c.HTTP.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
+		if err != nil {
+			return nil, fmt.Errorf("all clients failed: last error: %w", err)
+		}
+		return resp, nil
+	}
+
+	return nil, errors.New("no available client could handle the request")
 }
 
 func (c *Client) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
@@ -83,19 +125,19 @@ func (c *Client) GetCity(ctx context.Context, id string) (*domain.CityMain, erro
 	return resp, nil
 }
 
-func (c *Client) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
-	resp, err := c.GRPC.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
-	if err != nil {
-		c.logger.Warn("errors listing products via grpc, trying http", "error", err)
+// func (c *Client) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
+// 	resp, err := c.GRPC.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
+// 	if err != nil {
+// 		c.logger.Warn("errors listing products via grpc, trying http", "error", err)
 
-		resp, err = c.HTTP.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
-		if err != nil {
-			c.logger.Error("error listing products both using http and grpc", "error", err)
-			return nil, err
-		}
-	}
-	return resp, nil
-}
+// 		resp, err = c.HTTP.Product.ListProducts(ctx, params, ids, categoryIDs, withCategory)
+// 		if err != nil {
+// 			c.logger.Error("error listing products both using http and grpc", "error", err)
+// 			return nil, err
+// 		}
+// 	}
+// 	return resp, nil
+// }
 
 func (c *Client) GetProduct(ctx context.Context, id string) (*domain.ProductMain, error) {
 	resp, err := c.GRPC.Product.GetProduct(ctx, id)
