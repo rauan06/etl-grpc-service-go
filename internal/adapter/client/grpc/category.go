@@ -7,6 +7,7 @@ import (
 
 	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CategoryClient struct {
@@ -15,7 +16,7 @@ type CategoryClient struct {
 }
 
 func NewCategoryClient(ctx context.Context, url string) (*CategoryClient, error) {
-	conn, err := grpc.Dial(url, grpc.WithInsecure())
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

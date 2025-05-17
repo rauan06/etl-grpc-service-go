@@ -9,14 +9,20 @@ import (
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/client/grpc"
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/client/http"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
 )
 
+// Client is a structure that implements port.ClientI interface
 type Client struct {
 	GRPC   *grpc.Client
 	HTTP   *http.Client
 	logger *slog.Logger
 }
 
+var _ port.CLientI = (*Client)(nil)
+
+// NewClient accepts http and grpc client instances, and a logger.
+// Returns new instance of Client
 func NewClient(
 	grpc *grpc.Client,
 	http *http.Client,
@@ -29,6 +35,8 @@ func NewClient(
 	}
 }
 
+// ListProducts sends get request to the /product endpoint via grpc
+// uses http if grpc fails
 func (c *Client) ListProducts(ctx context.Context, params domain.ListParamsSt, ids, categoryIDs []string, withCategory bool) (*domain.ProductListRep, error) {
 	// Validate context
 	if ctx == nil {
@@ -153,12 +161,12 @@ func (c *Client) GetProduct(ctx context.Context, id string) (*domain.ProductMain
 	return resp, nil
 }
 
-func (c *Client) ListPrices(ctx context.Context, params domain.ListParamsSt, productIds, cityIds []string) (*domain.PriceListRep, error) {
-	resp, err := c.GRPC.Price.ListPrices(ctx, params, productIds, cityIds)
+func (c *Client) ListPrices(ctx context.Context, params domain.ListParamsSt, productIDs, cityIDs []string) (*domain.PriceListRep, error) {
+	resp, err := c.GRPC.Price.ListPrices(ctx, params, productIDs, cityIDs)
 	if err != nil {
 		c.logger.Warn("errors listing prices via grpc, trying http", "error", err)
 
-		resp, err = c.HTTP.Price.ListPrices(ctx, params, productIds, cityIds)
+		resp, err = c.HTTP.Price.ListPrices(ctx, params, productIDs, cityIDs)
 		if err != nil {
 			c.logger.Error("error listing prices both using http and grpc", "error", err)
 			return nil, err
@@ -167,12 +175,12 @@ func (c *Client) ListPrices(ctx context.Context, params domain.ListParamsSt, pro
 	return resp, nil
 }
 
-func (c *Client) GetPrice(ctx context.Context, productId, cityId string) (*domain.PriceMain, error) {
-	resp, err := c.GRPC.Price.GetPrice(ctx, productId, cityId)
+func (c *Client) GetPrice(ctx context.Context, productID, cityID string) (*domain.PriceMain, error) {
+	resp, err := c.GRPC.Price.GetPrice(ctx, productID, cityID)
 	if err != nil {
 		c.logger.Warn("errors getting price via grpc, trying http", "error", err)
 
-		resp, err = c.HTTP.Price.GetPrice(ctx, productId, cityId)
+		resp, err = c.HTTP.Price.GetPrice(ctx, productID, cityID)
 		if err != nil {
 			c.logger.Error("error getting price both using http and grpc", "error", err)
 			return nil, err
@@ -181,12 +189,12 @@ func (c *Client) GetPrice(ctx context.Context, productId, cityId string) (*domai
 	return resp, nil
 }
 
-func (c *Client) ListStocks(ctx context.Context, params domain.ListParamsSt, productIds, cityIds []string) (*domain.StockListRep, error) {
-	resp, err := c.GRPC.Stock.ListStocks(ctx, params, productIds, cityIds)
+func (c *Client) ListStocks(ctx context.Context, params domain.ListParamsSt, productIDs, cityIDs []string) (*domain.StockListRep, error) {
+	resp, err := c.GRPC.Stock.ListStocks(ctx, params, productIDs, cityIDs)
 	if err != nil {
 		c.logger.Warn("errors listing stocks via grpc, trying http", "error", err)
 
-		resp, err = c.HTTP.Stock.ListStocks(ctx, params, productIds, cityIds)
+		resp, err = c.HTTP.Stock.ListStocks(ctx, params, productIDs, cityIDs)
 		if err != nil {
 			c.logger.Error("error listing stocks both using http and grpc", "error", err)
 			return nil, err
@@ -195,12 +203,12 @@ func (c *Client) ListStocks(ctx context.Context, params domain.ListParamsSt, pro
 	return resp, nil
 }
 
-func (c *Client) GetStock(ctx context.Context, productId, cityId string) (*domain.StockMain, error) {
-	resp, err := c.GRPC.Stock.GetStock(ctx, productId, cityId)
+func (c *Client) GetStock(ctx context.Context, productID, cityID string) (*domain.StockMain, error) {
+	resp, err := c.GRPC.Stock.GetStock(ctx, productID, cityID)
 	if err != nil {
 		c.logger.Warn("errors getting stock via grpc, trying http", "error", err)
 
-		resp, err = c.HTTP.Stock.GetStock(ctx, productId, cityId)
+		resp, err = c.HTTP.Stock.GetStock(ctx, productID, cityID)
 		if err != nil {
 			c.logger.Error("error getting stock both using http and grpc", "error", err)
 			return nil, err

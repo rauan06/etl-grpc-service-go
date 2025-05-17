@@ -15,7 +15,6 @@ import (
 	clientHttp "github.com/rauan06/etl-grpc-service-go/internal/adapter/client/http"
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/handler"
 	"github.com/rauan06/etl-grpc-service-go/internal/adapter/repository"
-	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/port"
 	"github.com/rauan06/etl-grpc-service-go/internal/core/service"
 	"github.com/rauan06/etl-grpc-service-go/pkg/config"
@@ -24,13 +23,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-func isRunningInDocker() bool {
-	if _, err := os.Stat("/.dockerenv"); err == nil {
-		return true
-	}
-	return false
-}
 
 func main() {
 	// Setup logger
@@ -42,10 +34,6 @@ func main() {
 		logger.Error("Error loading environment variables", "error", err)
 		os.Exit(1)
 	}
-
-	// fmt.Println(cfg.Product)
-	// fmt.Println(cfg.Price)
-	// fmt.Println(cfg.Stock)
 
 	// Start gRPC server
 	lis, err := net.Listen("tcp", ":5059")
@@ -86,18 +74,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	categoryHttpClient := clientHttp.NewCategoryClient(productURL)
-	cityHttpClient := clientHttp.NewCityClient(productURL)
-	priceHttpClient := clientHttp.NewPriceClient(priceURL)
-	stockHttpClient := clientHttp.NewStockClient(storeURL)
-	productHttpClient := clientHttp.NewProductClient(productURL)
-	httpClient := clientHttp.NewClient(categoryHttpClient, cityHttpClient, productHttpClient, priceHttpClient, stockHttpClient)
+	categoryHTTPClient := clientHttp.NewCategoryClient(productURL)
+	cityHTTPClient := clientHttp.NewCityClient(productURL)
+	priceHTTPClient := clientHttp.NewPriceClient(priceURL)
+	stockHTTPClient := clientHttp.NewStockClient(storeURL)
+	productHTTPClient := clientHttp.NewProductClient(productURL)
+	HTTPClient := clientHttp.NewClient(categoryHTTPClient, cityHTTPClient, productHTTPClient, priceHTTPClient, stockHTTPClient)
 
-	client := client.NewClient(grpcClient, httpClient, logger)
-	if err := CheckConnetion(client); err != nil {
-		logger.Error("Error checking connection", "error", err)
-		os.Exit(1)
-	}
+	client := client.NewClient(grpcClient, HTTPClient, logger)
 
 	// Repository layer
 	// Storage
@@ -140,36 +124,4 @@ func main() {
 	if err := http.ListenAndServe(":8099", mux); err != nil {
 		log.Fatalf("failed to start HTTP server: %v", err)
 	}
-}
-
-// Pings every enpoint
-func CheckConnetion(client port.CLientI) error {
-	ctx := context.Background()
-
-	_, err := client.ListCategories(ctx, domain.ListParamsSt{}, []string{})
-	if err != nil {
-		return err
-	}
-
-	_, err = client.ListProducts(ctx, domain.ListParamsSt{}, []string{}, []string{}, false)
-	if err != nil {
-		return err
-	}
-
-	_, err = client.ListCities(ctx, domain.ListParamsSt{}, []string{})
-	if err != nil {
-		return err
-	}
-
-	_, err = client.ListPrices(ctx, domain.ListParamsSt{}, []string{}, []string{})
-	if err != nil {
-		return err
-	}
-
-	_, err = client.ListStocks(ctx, domain.ListParamsSt{}, []string{}, []string{})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
