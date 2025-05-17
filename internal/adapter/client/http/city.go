@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"category/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 )
 
 const (
@@ -27,8 +27,14 @@ func NewCityClient(URL *url.URL) *CityClient {
 func (r *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CityListRep, error) {
 	// Format params to url.Values format
 	urlParams := r.URL.Query()
-	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
-	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	if params.Page >= 0 {
+		urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
+	}
+
+	if params.PageSize > 0 {
+		urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+	}
 
 	for _, sortVal := range params.Sort {
 		urlParams.Add("list_params.sort", sortVal)

@@ -1,0 +1,127 @@
+services:
+  db-product:
+    image: postgres:17
+    container_name: db-product
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: product
+    volumes:
+      - ./db-product:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - etl-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  demo-product:
+    image: b1go/product:latest
+    container_name: demo-product
+    environment:
+      PG_DSN: postgres://postgres:123456@db-product:5432/product?sslmode=disable
+    ports:
+      - "8080:80"
+      - "5050:5050"
+    depends_on:
+      db-product:
+        condition: service_healthy
+    networks:
+      - etl-network
+
+  db-store:
+    image: postgres:17
+    container_name: db-store
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: store
+    volumes:
+      - ./db-store:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - etl-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  demo-store:
+    image: b1go/store:latest
+    container_name: demo-store
+    environment:
+      PG_DSN: postgres://postgres:123456@db-store:5432/store?sslmode=disable
+    ports:
+      - "8081:80"
+      - "5051:5050"
+    depends_on:
+      db-store:
+        condition: service_healthy
+    networks:
+      - etl-network
+
+  db-price:
+    image: postgres:17
+    container_name: db-price
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: price
+    volumes:
+      - ./db-price:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - etl-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  demo-price:
+    image: b1go/price:latest
+    container_name: demo-price
+    environment:
+      PG_DSN: postgres://postgres:123456@db-price:5432/price?sslmode=disable
+    ports:
+      - "8082:80"
+      - "5052:5050"
+    depends_on:
+      db-price:
+        condition: service_healthy
+    networks:
+      - etl-network
+
+  # etl-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: etl-service
+  #   environment:
+  #     PRODUCT_URL: demo-product
+  #     PRODUCT_PORT_HTTP: 8080
+  #     PRODUCT_PORT_GRPC: 5050
+  #     PRICE_URL: demo-price
+  #     PRICE_PORT_HTTP: 8080
+  #     PRICE_PORT_GRPC: 5050
+  #     STOCK_URL: demo-store
+  #     STOCK_PORT_HTTP: 8080
+  #     STOCK_PORT_GRPC: 5050
+  #   ports:
+  #     - "8099:8099"
+  #   depends_on:
+  #     - demo-price
+  #     - demo-store
+  #     - demo-product
+  #   networks:
+  #     - etl-network
+
+networks:
+  etl-network:
+    driver: bridge

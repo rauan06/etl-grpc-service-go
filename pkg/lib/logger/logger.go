@@ -3,9 +3,12 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	stdLog "log"
 	"log/slog"
+	"path/filepath"
+	"runtime"
 )
 
 type PrettyHandlerOptions struct {
@@ -47,8 +50,14 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 	fields := make(map[string]interface{}, r.NumAttrs())
 
 	r.Attrs(func(a slog.Attr) bool {
+		// Special handling for error values
+		if a.Key == "err" || a.Key == "error" {
+			if err, ok := a.Value.Any().(error); ok {
+				fields[a.Key] = err.Error()
+				return true
+			}
+		}
 		fields[a.Key] = a.Value.Any()
-
 		return true
 	})
 
@@ -56,9 +65,18 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		fields[a.Key] = a.Value.Any()
 	}
 
+	if r.Level != slog.LevelInfo {
+		pc, file, line, ok := runtime.Caller(4)
+		if ok {
+			funcName := runtime.FuncForPC(pc).Name()
+			funcName = filepath.Base(funcName)
+			fileName := filepath.Base(file)
+			fields["caller"] = fileName + ":" + funcName + ":" + fmt.Sprintf("%d", line)
+		}
+	}
+
 	var b []byte
 	var err error
-
 	if len(fields) > 0 {
 		b, err = json.MarshalIndent(fields, "", "  ")
 		if err != nil {
@@ -72,7 +90,7 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		timeStr,
 		level,
 		msg,
-		"\033[37m"+string(b)+"\033[0m", // White for string(b)
+		"\033[37m"+string(b)+"\033[0m", // White for fields
 	)
 
 	return nil

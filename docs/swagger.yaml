@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: ETL Service API
+  version: 1.0.0
+  description: API for managing ETL (Extract, Transform, Load) processes and retrieving product data.
+
+paths:
+  /etl/start:
+    post:
+      summary: Start ETL Process
+      responses:
+        '200':
+          description: ETL start response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ETLResponse'
+
+  /etl/stop:
+    post:
+      summary: Stop ETL Process
+      responses:
+        '200':
+          description: ETL stop response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ETLResponse'
+
+  /etl/status:
+    get:
+      summary: Check ETL Status
+      responses:
+        '200':
+          description: ETL status response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ETLResponse'
+
+  /etl/products:
+    get:
+      summary: Get Valid Products
+      responses:
+        '200':
+          description: List of valid products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullProductListResponse'
+
+components:
+  schemas:
+    ETLRequest:
+      type: object
+      description: Empty request (reserved fields in proto)
+    
+    ETLResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+
+    FullProductListResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FullProduct'
+        pagination_info:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    FullProduct:
+      type: object
+      properties:
+        product_main:
+          $ref: '#/components/schemas/ProductMain'
+        price:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceMain'
+        stock:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockMain'
+
+    ProductMain:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted:
+          type: boolean
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category_id:
+          type: string
+        category:
+          $ref: '#/components/schemas/CategoryMain'
+
+    PriceMain:
+      type: object
+      properties:
+        product_id:
+          type: string
+        city_id:
+          type: string
+        price:
+          type: number
+          format: double
+
+    StockMain:
+      type: object
+      properties:
+        product_id:
+          type: string
+        city_id:
+          type: string
+        value:
+          type: integer
+          format: int64
+
+    CategoryMain:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted:
+          type: boolean
+        id:
+          type: string
+        name:
+          type: string
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int64
+        page_size:
+          type: integer
+          format: int64

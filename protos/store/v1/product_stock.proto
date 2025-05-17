@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package store;
+
+import "google/api/annotations.proto";
+import "protos/store/v1/common.proto";
+
+option go_package = "/store/v1;store";
+
+service ProductStock {
+    rpc List(ProductStockListReq) returns (ProductStockListRep) {
+        option (google.api.http) = {
+            get: "/product_stock"
+        };
+    };
+    rpc Get(ProductStockGetReq) returns (ProductStockMain) {
+        option (google.api.http) = {
+            get: "/product_stock/one"
+        };
+    };
+}
+
+message ProductStockMain {
+    string product_id = 1;
+    string city_id = 2;
+
+    int64 value = 3;
+}
+
+message ProductStockGetReq {
+    string product_id = 1;
+    string city_id = 2;
+}
+
+message ProductStockListReq {
+    ListParamsSt list_params = 1;
+    repeated string product_ids = 2;
+    repeated string city_ids = 3;
+}
+
+message ProductStockListRep {
+    PaginationInfoSt pagination_info = 1;
+    repeated ProductStockMain results = 2;
+}

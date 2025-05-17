@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package price;
+
+import "google/api/annotations.proto";
+import "protos/price/v1/common.proto";
+
+option go_package = "/price/v1;price";
+
+service ProductPrice {
+    rpc List(ProductPriceListReq) returns (ProductPriceListRep) {
+        option (google.api.http) = {
+            get: "/product_price"
+        };
+    };
+    rpc Get(ProductPriceGetReq) returns (ProductPriceMain) {
+        option (google.api.http) = {
+            get: "/product_price/one"
+        };
+    };
+}
+
+message ProductPriceMain {
+    string product_id = 1;
+    string city_id = 2;
+
+    double price = 3;
+}
+
+message ProductPriceGetReq {
+    string product_id = 1;
+    string city_id = 2;
+}
+
+message ProductPriceListReq {
+    ListParamsSt list_params = 1;
+    repeated string product_ids = 2;
+    repeated string city_ids = 3;
+}
+
+message ProductPriceListRep {
+    PaginationInfoSt pagination_info = 1;
+    repeated ProductPriceMain results = 2;
+}

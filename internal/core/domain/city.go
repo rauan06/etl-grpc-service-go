@@ -13,3 +13,11 @@ type CityListRep struct {
 	PaginationInfo PaginationInfoSt `json:"pagination_info"`
 	Results        []CityMain       `json:"results"`
 }
+
+func (c *CityMain) IsValid() bool {
+	if c.CreatedAt == "" || c.Deleted || c.UpdatedAt == "" || c.ID == "" || c.Name == "" {
+		return false
+	}
+
+	return true
+}

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"category/internal/core/domain"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
 )
 
 const (
@@ -27,8 +27,14 @@ func NewCategoryClient(URL *url.URL) *CategoryClient {
 func (r *CategoryClient) ListCategories(ctx context.Context, params domain.ListParamsSt, ids []string) (*domain.CategoryListRep, error) {
 	// Format params to url.Values format
 	urlParams := r.URL.Query()
-	urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
-	urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+
+	if params.Page >= 0 {
+		urlParams.Set("list_params.page", strconv.FormatInt(params.Page, 10))
+	}
+
+	if params.PageSize > 0 {
+		urlParams.Set("list_params.page_size", strconv.FormatInt(params.PageSize, 10))
+	}
 
 	for _, sortVal := range params.Sort {
 		urlParams.Add("list_params.sort", sortVal)
@@ -46,7 +52,7 @@ func (r *CategoryClient) ListCategories(ctx context.Context, params domain.ListP
 		return nil, err
 	}
 
-	var categories = &domain.CategoryListRep{}
+	categories := &domain.CategoryListRep{}
 	if err := json.NewDecoder(resp.Body).Decode(categories); err != nil {
 		return nil, err
 	}

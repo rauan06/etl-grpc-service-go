@@ -3,11 +3,10 @@ package grpc
 import (
 	"context"
 
-	"category/internal/core/domain"
-	pb "category/protos/product/v1"
+	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
+	pb "github.com/rauan06/etl-grpc-service-go/protos/product/v1/pb"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CityClient struct {
@@ -16,7 +15,7 @@ type CityClient struct {
 }
 
 func NewCityClient(ctx context.Context, url string) (*CityClient, error) {
-	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +42,15 @@ func (c *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt,
 		return nil, err
 	}
 
+	if resp == nil {
+		return nil, nil
+	}
+
 	var results []domain.CityMain
 	for _, cat := range resp.Results {
+		if cat == nil {
+			continue
+		}
 		results = append(results, domain.CityMain{
 			UpdatedAt: cat.UpdatedAt.String(),
 			CreatedAt: cat.CreatedAt.String(),
@@ -54,12 +60,15 @@ func (c *CityClient) ListCities(ctx context.Context, params domain.ListParamsSt,
 		})
 	}
 
+	pagination := domain.PaginationInfoSt{}
+	if resp.PaginationInfo != nil {
+		pagination.Page = resp.PaginationInfo.Page
+		pagination.PageSize = resp.PaginationInfo.PageSize
+	}
+
 	return &domain.CityListRep{
-		PaginationInfo: domain.PaginationInfoSt{
-			Page:     resp.PaginationInfo.Page,
-			PageSize: resp.PaginationInfo.PageSize,
-		},
-		Results: results,
+		PaginationInfo: pagination,
+		Results:        results,
 	}, nil
 }
 
@@ -67,6 +76,10 @@ func (c *CityClient) GetCity(ctx context.Context, id string) (*domain.CityMain, 
 	resp, err := c.service.Get(ctx, &pb.CityGetReq{Id: id})
 	if err != nil {
 		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil
 	}
 
 	return &domain.CityMain{
