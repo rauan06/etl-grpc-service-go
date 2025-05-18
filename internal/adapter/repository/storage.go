@@ -40,6 +40,8 @@ func (s *Repositry) GetResults() []domain.FullProduct {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// RWmutex	
+
 	resp := []domain.FullProduct{}
 	for _, val := range s.results {
 		resp = append(resp, val)

@@ -43,10 +43,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// fmt.Println(cfg.Product)
-	// fmt.Println(cfg.Price)
-	// fmt.Println(cfg.Stock)
-
 	// Start gRPC server
 	lis, err := net.Listen("tcp", ":5059")
 	if err != nil {
@@ -59,7 +55,7 @@ func main() {
 	ctx := context.Background()
 
 	// gRPC Client
-	grpcCategoryClient, _ := clientGrpc.NewCategoryClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
+	grpcCategoryClient, err := clientGrpc.NewCategoryClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
 	grpcProductClient, _ := clientGrpc.NewProductClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
 	grpcCityClient, _ := clientGrpc.NewCityClient(ctx, cfg.Product.URL+":"+cfg.Product.PortGrpc)
 	grpcPriceClient, _ := clientGrpc.NewPriceClient(ctx, cfg.Price.URL+":"+cfg.Price.PortGrpc)

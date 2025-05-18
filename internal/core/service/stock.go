@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/rauan06/etl-grpc-service-go/internal/core/domain"
@@ -18,35 +19,52 @@ type StockService struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	status int
+	action   bool
+	wg       *sync.WaitGroup
+	statusMu *sync.Mutex
+	status   int
 }
 
 func NewStockService(client port.CLientI, repo port.Repository, logger *slog.Logger) StockService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return StockService{
-		client: client,
-		repo:   repo,
-		logger: logger,
-		ctx:    ctx,
-		cancel: cancel,
-		status: domain.StatusNotStarted,
+		client:   client,
+		repo:     repo,
+		logger:   logger,
+		ctx:      ctx,
+		cancel:   cancel,
+		wg:       new(sync.WaitGroup),
+		action:   false,
+		statusMu: new(sync.Mutex),
+		status:   domain.StatusNotStarted,
 	}
 }
 
 func (s *StockService) Run() {
-	if s.Status() == domain.StatusRunning {
+	s.statusMu.Lock()
+	if s.status == domain.StatusRunning {
+		s.statusMu.Unlock()
 		return
 	}
 
+	s.status = domain.StatusRunning
+
+	s.cancel()
 	s.ctx, s.cancel = context.WithCancel(context.Background())
+	s.statusMu.Unlock()
 
 	stocks := make(chan domain.StockMain)
 
-	go s.CollectStocks(stocks)
-	go s.SearchStocks(stocks)
-
-	s.status = domain.StatusRunning
+	s.wg.Add(2)
+	go func() {
+		defer s.wg.Done()
+		s.CollectStocks(stocks)
+	}()
+	go func() {
+		defer s.wg.Done()
+		s.SearchStocks(stocks)
+	}()
 
 	s.logger.Info("stock service has started")
 }
@@ -56,23 +74,31 @@ func (s *StockService) GetServiceName() string {
 }
 
 func (s *StockService) Status() int {
+	s.statusMu.Lock()
+	defer s.statusMu.Unlock()
+
 	return s.status
 }
 
 func (s *StockService) Stop() {
+	s.statusMu.Lock()
 	if s.status == domain.StatusShutdown {
+		s.statusMu.Unlock()
 		return
 	}
 
-	s.cancel()
-
 	s.status = domain.StatusShutdown
+	s.statusMu.Unlock()
 
+	s.cancel()
+	s.wg.Wait()
 	s.logger.InfoContext(s.ctx, "stopped stock service gracefully")
 }
 
 func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 	defer close(stocks)
+
+	// workers := runtime.GOMAXPROCS(0)
 
 	var page int64
 	for {
@@ -104,9 +130,13 @@ func (s *StockService) SearchStocks(stocks chan<- domain.StockMain) {
 }
 
 func (s *StockService) fetchStocks(ctx context.Context, params domain.ListParamsSt) (*domain.StockListRep, error) {
-	resp, err := s.client.ListStocks(ctx, params, []string{}, []string{})
+	resp, err := s.client.ListStocks(s.ctx, params, []string{}, []string{})
 	if err != nil {
 		return nil, err
+	}
+
+	if len(resp.Results) == 0 {
+		return nil, errors.New("empty resutls")
 	}
 
 	return resp, nil

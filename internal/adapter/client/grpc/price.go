@@ -15,7 +15,7 @@ type PriceClient struct {
 }
 
 func NewPriceClient(ctx context.Context, url string) (*PriceClient, error) {
-	conn, err := grpc.Dial(url, grpc.WithInsecure())
+	conn, err := grpc.NewClient(url, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

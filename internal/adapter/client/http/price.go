@@ -15,10 +15,13 @@ const (
 )
 
 type PriceClient struct {
-	URL *url.URL
+	client http.Client
+	URL    *url.URL
 }
 
-func NewPriceClient(URL *url.URL) *PriceClient {
+func NewPriceClient(URL *url.URL, client http.Client) *PriceClient {
+	// retry
+
 	return &PriceClient{
 		URL: URL.JoinPath(pathPrice),
 	}

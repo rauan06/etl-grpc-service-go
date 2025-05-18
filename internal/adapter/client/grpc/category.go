@@ -19,6 +19,8 @@ func NewCategoryClient(ctx context.Context, url string) (*CategoryClient, error)
 	if err != nil {
 		return nil, err
 	}
+	// conn.Ping
+
 	return &CategoryClient{
 		conn:    conn,
 		service: pb.NewCategoryClient(conn),
