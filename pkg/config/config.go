@@ -2,8 +2,6 @@ package config
 
 import (
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 // Container contains environment variables for the application
@@ -34,10 +32,10 @@ type (
 // New creates a new container instance
 func New() (*Container, error) {
 	if os.Getenv("APP_ENV") != "production" {
-		err := godotenv.Load()
-		if err != nil {
-			return nil, err
-		}
+		// err := godotenv.Load()
+		// if err != nil {
+		// 	return nil, err
+		// }
 	}
 
 	product := &Product{
