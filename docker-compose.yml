@@ -17,7 +17,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
   demo-product:
     image: b1go/product:latest
     container_name: demo-product
@@ -98,29 +97,29 @@ services:
     networks:
       - etl-network
 
-  # etl-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: etl-service
-  #   environment:
-  #     PRODUCT_URL: demo-product
-  #     PRODUCT_PORT_HTTP: 8080
-  #     PRODUCT_PORT_GRPC: 5050
-  #     PRICE_URL: demo-price
-  #     PRICE_PORT_HTTP: 8080
-  #     PRICE_PORT_GRPC: 5050
-  #     STOCK_URL: demo-store
-  #     STOCK_PORT_HTTP: 8080
-  #     STOCK_PORT_GRPC: 5050
-  #   ports:
-  #     - "8099:8099"
-  #   depends_on:
-  #     - demo-price
-  #     - demo-store
-  #     - demo-product
-  #   networks:
-  #     - etl-network
+  etl-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: etl-service
+    environment:
+      PRODUCT_URL: demo-product
+      PRODUCT_PORT_HTTP: 8080
+      PRODUCT_PORT_GRPC: 5050
+      PRICE_URL: demo-price
+      PRICE_PORT_HTTP: 8080
+      PRICE_PORT_GRPC: 5050
+      STOCK_URL: demo-store
+      STOCK_PORT_HTTP: 8080
+      STOCK_PORT_GRPC: 5050
+    ports:
+      - "8099:8099"
+    depends_on:
+      - demo-price
+      - demo-store
+      - demo-product
+    networks:
+      - etl-network
 
 networks:
   etl-network:
